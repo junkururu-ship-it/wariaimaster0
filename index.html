@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>割合マスター - ひ・き・わり納豆で学んでバッジを集めよう！</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (M PLUS Rounded 1c でポップな印象に) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"M PLUS Rounded 1c"', 'sans-serif'],
+                    },
+                    animation: {
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'shake': 'shake 0.4s ease-in-out',
+                        'bounce-slow': 'bounce 2.2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'shine': 'shine 1.8s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pop: {
+                            '0%': { transform: 'scale(0.85)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-6px)' },
+                            '40%, 80%': { transform: 'translateX(6px)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
+                        },
+                        shine: {
+                            '0%, 100%': { transform: 'scale(1) rotate(0deg)' },
+                            '50%': { transform: 'scale(1.08) rotate(3deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ポップなドット背景とタップハイライト調整 */
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: #fffbf0;
+            background-image: radial-gradient(#fde68a 1.5px, transparent 1.5px), radial-gradient(#bfdbfe 1.5px, #fffbf0 1.5px);
+            background-size: 36px 36px;
+            background-position: 0 0, 18px 18px;
+        }
+        /* 数値入力のスピンボタン非表示 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* ぷっくり3Dボタン演出 */
+        .btn-pop {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn-pop:active:not(:disabled) {
+            transform: translateY(3px);
+        }
+        /* 紙吹雪パーティクル */
+        .confetti-piece {
+            position: fixed;
+            top: -16px;
+            z-index: 60;
+            pointer-events: none;
+            border-radius: 3px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(105vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col font-sans selection:bg-pink-200 selection:text-pink-900">
+
+    <!-- 紙吹雪コンテナ -->
+    <div id="confetti-container" class="pointer-events-none fixed inset-0 z-50 overflow-hidden"></div>
+
+    <!-- トップナビゲーションバー -->
+    <header class="bg-white/95 backdrop-blur-md border-b-4 border-amber-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-3xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+            <button id="header-home-btn" class="flex items-center gap-2 group focus:outline-none">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 via-orange-400 to-amber-400 flex items-center justify-center text-white font-black text-xl shadow-md border-b-4 border-pink-700/30 group-hover:scale-105 transition-transform">
+                    割
+                </div>
+                <div class="text-left">
+                    <h1 class="font-black text-slate-800 leading-tight text-base sm:text-lg tracking-tight">割合マスター</h1>
+                    <p class="text-[11px] font-bold text-orange-500 hidden sm:block">ひ・き・わり納豆で完全制覇！</p>
+                </div>
+            </button>
+
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- バッジ帳ボタン -->
+                <button id="open-badges-btn" class="btn-pop flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 text-white font-extrabold text-xs sm:text-sm border-b-4 border-orange-600 shadow-sm hover:brightness-105">
+                    <span class="text-base leading-none">🏅</span>
+                    <span>バッジ帳</span>
+                    <span id="header-badge-count" class="bg-white/90 text-orange-600 px-1.5 py-0.5 rounded-full text-[11px] font-black tabular-nums">0/20</span>
+                </button>
+
+                <!-- 効果音トグルボタン -->
+                <button id="sound-toggle-btn" title="効果音のON/OFF" class="p-2 rounded-2xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors focus:outline-none">
+                    <!-- 音声ONアイコン -->
+                    <svg id="icon-sound-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                    </svg>
+                    <!-- 音声OFFアイコン -->
+                    <svg id="icon-sound-off" class="w-5 h-5 hidden text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+                    </svg>
+                </button>
+
+                <!-- 公式ガイドボタン -->
+                <button id="open-guide-btn" class="btn-pop flex items-center gap-1 px-3 py-2 rounded-2xl bg-amber-100 text-amber-800 font-extrabold text-xs sm:text-sm border-b-4 border-amber-300 hover:bg-amber-200 transition-colors">
+                    <span class="text-sm">📖</span>
+                    <span class="hidden sm:inline">公式ガイド</span>
+                    <span class="sm:hidden">公式</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ領域 -->
+    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6 sm:py-8">
+
+        <!-- ==================== 1. ホーム画面 ==================== -->
+        <section id="view-home" class="space-y-6 animate-fade-in">
+            <!-- ポップなヒーローバナー -->
+            <div class="bg-gradient-to-br from-sky-400 via-indigo-500 to-fuchsia-500 rounded-[2rem] p-6 sm:p-8 text-white shadow-xl border-b-8 border-indigo-700/40 relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 text-8xl opacity-20 select-none animate-float">🎯</div>
+                <div class="absolute right-12 bottom-2 text-5xl opacity-25 select-none animate-bounce-slow">✨</div>
+                <div class="relative z-10">
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/25 backdrop-blur-sm text-xs font-black tracking-wide mb-3 shadow-sm">
+                        <span>🫘</span> 合言葉は「ひ・き・わり」納豆！
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-black mb-2 leading-snug drop-shadow-sm">
+                        割合クイズにチャレンジして<br class="hidden sm:inline">キラキラのバッジをゲットしよう！
+                    </h2>
+                    <p class="text-sky-50 text-sm sm:text-base font-bold max-w-xl">
+                        「比較量（ひ）・基準量（き）・割合（わり）」を見抜く力と計算力をきたえて、全20種類のバッジを集めよう！
+                    </p>
+                </div>
+            </div>
+
+            <!-- バッジコレクション進捗カード -->
+            <div id="home-badge-card" class="cursor-pointer bg-white rounded-3xl p-4 sm:p-5 border-4 border-amber-300 shadow-md hover:shadow-lg hover:border-amber-400 transition-all group">
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl animate-shine inline-block">🏆</span>
+                        <div>
+                            <h3 class="font-black text-slate-800 text-base sm:text-lg leading-tight">あなたのバッジコレクション</h3>
+                            <p class="text-xs font-bold text-amber-600" id="home-badge-status-text">まずは最初の1個をゲットしよう！</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 font-black text-xs group-hover:bg-amber-200 transition-colors shrink-0">
+                        ぜんぶ見る ▶
+                    </span>
+                </div>
+                <!-- 進捗バー -->
+                <div class="w-full h-3.5 bg-amber-100 rounded-full overflow-hidden mb-3 p-0.5">
+                    <div id="home-badge-progress" class="h-full bg-gradient-to-r from-amber-400 via-orange-400 to-pink-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <!-- ミニバッジアイコン一覧（20個） -->
+                <div id="home-badge-preview" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                    <!-- JSで描画 -->
+                </div>
+            </div>
+
+            <!-- ステップ1：コース（難易度）選択 -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-black text-slate-600 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-pink-500 text-white inline-flex items-center justify-center text-xs shadow-sm">1</span>
+                    コース（難易度）をえらぼう！
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5" id="difficulty-cards">
+                    <!-- ① 初級 -->
+                    <button data-diff="beginner" class="diff-card btn-pop text-left p-4 sm:p-5 rounded-3xl border-4 border-emerald-400 bg-emerald-50 shadow-md transition-all focus:outline-none relative">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-black shadow-sm">🌱 全20問</span>
+                            <span class="text-emerald-600 text-xs font-black check-badge">えらんでるよ ✓</span>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-base sm:text-lg mb-1">【初級】基礎コース</h4>
+                        <p class="text-xs font-bold text-slate-600 leading-relaxed">
+                            割合の第一歩！やさしく学ぼう（全20問）
+                        </p>
+                        <div class="diff-clear-stamp mt-2 text-xs font-black text-emerald-600 hidden">🏅 クリア：0回</div>
+                    </button>
+
+                    <!-- ② 中級 -->
+                    <button data-diff="intermediate" class="diff-card btn-pop text-left p-4 sm:p-5 rounded-3xl border-4 border-slate-200 bg-white hover:border-sky-300 shadow-sm transition-all focus:outline-none relative">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="px-3 py-1 rounded-full bg-sky-500 text-white text-xs font-black shadow-sm">🚀 全20問</span>
+                            <span class="text-sky-600 text-xs font-black check-badge hidden">えらんでるよ ✓</span>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-base sm:text-lg mb-1">【中級】チャレンジコース</h4>
+                        <p class="text-xs font-bold text-slate-600 leading-relaxed">
+                            百分率・歩合と文章題に挑戦！（全20問）
+                        </p>
+                        <div class="diff-clear-stamp mt-2 text-xs font-black text-sky-600 hidden">🏅 クリア：0回</div>
+                    </button>
+
+                    <!-- ③ 上級 -->
+                    <button data-diff="advanced" class="diff-card btn-pop text-left p-4 sm:p-5 rounded-3xl border-4 border-slate-200 bg-white hover:border-amber-300 shadow-sm transition-all focus:outline-none relative">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-black shadow-sm">👑 全20問</span>
+                            <span class="text-amber-600 text-xs font-black check-badge hidden">えらんでるよ ✓</span>
+                        </div>
+                        <h4 class="font-black text-slate-800 text-base sm:text-lg mb-1">【上級】マスターコース</h4>
+                        <p class="text-xs font-bold text-slate-600 leading-relaxed">
+                            割引・増減・元の数を求める応用！（全20問）
+                        </p>
+                        <div class="diff-clear-stamp mt-2 text-xs font-black text-amber-600 hidden">🏅 クリア：0回</div>
+                    </button>
+
+                    <!-- ④ 超級 -->
+                    <button data-diff="legend" class="diff-card btn-pop text-left p-4 sm:p-5 rounded-3xl border-4 border-purple-300 bg-gradient-to-br from-slate-900 via-purple-950 to-indigo-950 text-white hover:border-fuchsia-400 shadow-md transition-all focus:outline-none relative overflow-hidden">
+                        <div class="absolute -right-3 -bottom-3 text-6xl opacity-15 select-none">🐉</div>
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="px-3 py-1 rounded-full bg-gradient-to-r from-fuchsia-500 to-amber-400 text-white text-xs font-black shadow-sm">🌌 厳選5問</span>
+                                <span class="text-amber-300 text-xs font-black check-badge hidden">えらんでるよ ✓</span>
+                            </div>
+                            <h4 class="font-black text-amber-300 text-base sm:text-lg mb-1">【超級】レジェンドコース</h4>
+                            <p class="text-xs font-bold text-purple-100 leading-relaxed">
+                                難問15問からランダムで5問出題！（5問）
+                            </p>
+                            <div class="diff-clear-stamp mt-2 text-xs font-black text-fuchsia-300 hidden">🏅 クリア：0回</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ステップ2：ステップ選択（初級・中級・上級のみ） -->
+            <div class="space-y-3" id="step-section">
+                <h3 class="text-sm font-black text-slate-600 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-emerald-500 text-white inline-flex items-center justify-center text-xs shadow-sm">2</span>
+                    ステップをえらぼう！（10問ずつチャレンジ）
+                </h3>
+                <div class="grid grid-cols-2 gap-3" id="step-selector">
+                    <button data-step="1" class="step-btn btn-pop p-3.5 rounded-2xl border-4 border-emerald-400 bg-emerald-50 text-left shadow-sm transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-black text-sm sm:text-base text-slate-800">🌱 ステップ1</span>
+                            <span id="step-1-cleared-tag" class="hidden text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white">クリア済 ✓</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500">第1〜10問（見分け5＋計算5）</p>
+                    </button>
+                    <button data-step="2" class="step-btn btn-pop p-3.5 rounded-2xl border-4 border-slate-200 bg-white hover:border-emerald-300 text-left shadow-sm transition-all">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-black text-sm sm:text-base text-slate-800">🔥 ステップ2</span>
+                            <span id="step-2-cleared-tag" class="hidden text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white">クリア済 ✓</span>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500">第11〜20問（見分け5＋計算5）</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ステップ3：出題モード選択 -->
+            <div class="space-y-3" id="mode-section">
+                <h3 class="text-sm font-black text-slate-600 flex items-center gap-2">
+                    <span id="mode-step-num" class="w-6 h-6 rounded-full bg-sky-500 text-white inline-flex items-center justify-center text-xs shadow-sm">3</span>
+                    もんだいのタイプをえらぼう！
+                </h3>
+                <div class="grid grid-cols-3 gap-2 bg-white p-2 rounded-3xl border-2 border-slate-200 shadow-sm" id="mode-selector">
+                    <button data-mode="all" class="mode-btn py-2.5 px-1.5 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm transition-all">
+                        🌈 総合<span class="block sm:inline text-[11px] sm:text-xs">（10問）</span>
+                    </button>
+                    <button data-mode="identify" class="mode-btn py-2.5 px-1.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                        🔍 見分けのみ<span class="block sm:inline text-[11px] sm:text-xs">（5問）</span>
+                    </button>
+                    <button data-mode="calc" class="mode-btn py-2.5 px-1.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                        🧮 計算のみ<span class="block sm:inline text-[11px] sm:text-xs">（5問）</span>
+                    </button>
+                </div>
+                <p id="legend-mode-notice" class="hidden text-xs font-extrabold text-purple-700 bg-purple-100 border-2 border-purple-200 rounded-2xl px-4 py-2.5">
+                    🌌 【超級】レジェンドコースは<strong>「難問15問から重複なしでランダム5問出題（計算のみ）」</strong>の特別ルール！ノーヒント＆全5問正解を3回達成すると超激レアバッジが手に入る！
+                </p>
+            </div>
+
+            <!-- スタートボタン -->
+            <div class="pt-2">
+                <button id="start-quiz-btn" class="btn-pop w-full py-4 px-6 rounded-3xl bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 hover:brightness-105 text-white font-black text-xl shadow-lg shadow-pink-200 border-b-[6px] border-rose-700 transition-all flex items-center justify-center gap-2">
+                    <span>レッツ・チャレンジ！</span>
+                    <span class="text-2xl">🚀</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== 2. クイズ画面 ==================== -->
+        <section id="view-quiz" class="hidden space-y-5 animate-fade-in">
+            <!-- クイズ上部ステータス -->
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+                <button id="quiz-back-btn" class="inline-flex items-center gap-1 text-sm font-black text-slate-500 hover:text-slate-800 transition-colors py-1.5 px-3 rounded-2xl bg-white border-2 border-slate-200 shadow-sm">
+                    ◀ やめる
+                </button>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- コンボ表示 -->
+                    <span id="quiz-combo-badge" class="hidden px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-sm animate-pop">
+                        🔥 2コンボ！
+                    </span>
+                    <span id="quiz-diff-badge" class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-700 border border-emerald-200">【初級】基礎コース</span>
+                    <span id="quiz-progress-text" class="text-sm font-black text-slate-700 bg-white px-3 py-1 rounded-full border-2 border-slate-200 tabular-nums">1 / 10</span>
+                </div>
+            </div>
+
+            <!-- プログレスバー -->
+            <div class="w-full h-4 bg-white border-2 border-slate-200 rounded-full overflow-hidden p-0.5 shadow-inner">
+                <div id="quiz-progress-bar" class="h-full bg-gradient-to-r from-sky-400 via-indigo-500 to-pink-500 rounded-full transition-all duration-500 ease-out" style="width: 10%"></div>
+            </div>
+
+            <!-- 問題カード -->
+            <div id="question-card" class="bg-white rounded-[2rem] p-5 sm:p-7 shadow-lg border-4 border-indigo-100 space-y-6">
+                <!-- 問題タイプとヒントボタン -->
+                <div class="flex items-center justify-between gap-2">
+                    <span id="question-type-badge" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-violet-100 text-violet-700">
+                        🔍 見分け問題
+                    </span>
+                    <button id="hint-toggle-btn" class="btn-pop text-xs font-black text-amber-700 bg-amber-100 hover:bg-amber-200 px-3.5 py-1.5 rounded-full border-b-2 border-amber-300 transition-colors flex items-center gap-1">
+                        <span>💡</span>
+                        ヒントを見る
+                    </button>
+                </div>
+
+                <!-- ヒントボックス（初期非表示） -->
+                <div id="hint-box" class="hidden bg-amber-50 border-2 border-amber-300 rounded-2xl p-3.5 text-xs sm:text-sm text-amber-900 font-bold animate-fade-in">
+                    <span class="font-black text-amber-600">🦉 ヒント：</span>
+                    <span id="hint-text"></span>
+                </div>
+
+                <!-- 問題文 -->
+                <div class="space-y-2 bg-slate-50/80 p-4 rounded-2xl border-2 border-slate-100">
+                    <p id="question-instruction" class="text-xs font-extrabold text-indigo-500"></p>
+                    <h3 id="question-text" class="text-lg sm:text-xl font-black text-slate-800 leading-relaxed"></h3>
+                </div>
+
+                <!-- ===== 見分け問題用エリア ===== -->
+                <div id="area-identify" class="hidden space-y-5">
+                    <!-- 3つのスロット（ひ・き・わり対応） -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- 基準量（き）スロット -->
+                        <div data-slot="base" class="slot-box cursor-pointer rounded-2xl border-3 border-dashed border-slate-300 bg-slate-50 p-3.5 transition-all hover:border-indigo-400">
+                            <div class="text-xs font-black text-emerald-600 mb-1 flex items-center justify-between">
+                                <span>① 基準量 <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">き</span></span>
+                                <span class="slot-clear hidden text-xs text-slate-400 hover:text-rose-500">✕</span>
+                            </div>
+                            <div class="slot-value min-h-[34px] flex items-center justify-center font-black text-base text-slate-400">
+                                タップして選択
+                            </div>
+                        </div>
+
+                        <!-- 比較量（ひ）スロット -->
+                        <div data-slot="compare" class="slot-box cursor-pointer rounded-2xl border-3 border-dashed border-slate-300 bg-slate-50 p-3.5 transition-all hover:border-indigo-400">
+                            <div class="text-xs font-black text-rose-600 mb-1 flex items-center justify-between">
+                                <span>② 比較量 <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">ひ</span></span>
+                                <span class="slot-clear hidden text-xs text-slate-400 hover:text-rose-500">✕</span>
+                            </div>
+                            <div class="slot-value min-h-[34px] flex items-center justify-center font-black text-base text-slate-400">
+                                タップして選択
+                            </div>
+                        </div>
+
+                        <!-- 割合（わり）スロット -->
+                        <div data-slot="rate" class="slot-box cursor-pointer rounded-2xl border-3 border-dashed border-slate-300 bg-slate-50 p-3.5 transition-all hover:border-indigo-400">
+                            <div class="text-xs font-black text-amber-600 mb-1 flex items-center justify-between">
+                                <span>③ 割合 <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">わり</span></span>
+                                <span class="slot-clear hidden text-xs text-slate-400 hover:text-rose-500">✕</span>
+                            </div>
+                            <div class="slot-value min-h-[34px] flex items-center justify-center font-black text-base text-slate-400">
+                                タップして選択
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 選択肢プール -->
+                    <div class="bg-indigo-50/70 rounded-2xl p-4 border-2 border-indigo-100">
+                        <p class="text-xs font-extrabold text-indigo-600 mb-2.5">👇 下のカードをタップして上のわくに入れよう！</p>
+                        <div id="identify-choices" class="flex flex-wrap gap-2.5">
+                            <!-- JSで生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 計算問題用エリア（電卓風ナンバーパッド付き） ===== -->
+                <div id="area-calc" class="hidden space-y-4">
+                    <div class="bg-sky-50/70 rounded-2xl p-4 sm:p-5 border-2 border-sky-200 space-y-4">
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <label for="calc-input" class="text-base font-black text-sky-700">こたえ：</label>
+                            <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
+                                <input
+                                    type="text"
+                                    inputmode="decimal"
+                                    id="calc-input"
+                                    autocomplete="off"
+                                    placeholder="数字を入力"
+                                    class="w-44 sm:w-52 text-center text-2xl font-black py-3 px-4 rounded-2xl border-4 border-sky-300 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all bg-white text-slate-900 shadow-inner"
+                                >
+                                <span id="calc-unit" class="text-xl font-black text-slate-700 min-w-[2rem]"></span>
+                            </div>
+                        </div>
+
+                        <!-- タッチ操作しやすい電卓風ナンバーパッド -->
+                        <div id="calc-numpad" class="max-w-xs mx-auto pt-1">
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" data-num="7" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">7</button>
+                                <button type="button" data-num="8" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">8</button>
+                                <button type="button" data-num="9" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">9</button>
+
+                                <button type="button" data-num="4" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">4</button>
+                                <button type="button" data-num="5" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">5</button>
+                                <button type="button" data-num="6" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">6</button>
+
+                                <button type="button" data-num="1" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">1</button>
+                                <button type="button" data-num="2" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">2</button>
+                                <button type="button" data-num="3" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">3</button>
+
+                                <button type="button" data-num="0" class="numpad-btn btn-pop py-3 rounded-2xl bg-white hover:bg-sky-50 border-2 border-sky-200 border-b-4 font-black text-xl text-slate-800 shadow-sm">0</button>
+                                <button type="button" data-num="." class="numpad-btn btn-pop py-3 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 border-b-4 font-black text-xl text-amber-800 shadow-sm">.</button>
+                                <button type="button" data-action="backspace" class="numpad-btn btn-pop py-3 rounded-2xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 border-b-4 font-black text-base text-rose-700 shadow-sm">⌫ 1字消す</button>
+                            </div>
+                            <button type="button" data-action="clear" class="numpad-btn btn-pop w-full mt-2 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 border-b-2 border-slate-400 font-black text-xs text-slate-700">
+                                クリア（ぜんぶ消す）
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 解答送信ボタン -->
+                <div id="submit-area">
+                    <button id="submit-answer-btn" class="btn-pop w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-500 to-sky-500 hover:brightness-105 disabled:from-slate-300 disabled:to-slate-300 disabled:border-slate-400 disabled:cursor-not-allowed text-white font-black text-lg shadow-md border-b-4 border-indigo-700 transition-all">
+                        こたえあわせ！ ✨
+                    </button>
+                </div>
+
+                <!-- フィードバック＆解説エリア（解答後に表示） -->
+                <div id="feedback-area" class="hidden rounded-3xl p-5 space-y-4 animate-pop border-4">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon" class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white font-black text-2xl shadow-sm">
+                            ○
+                        </div>
+                        <div class="space-y-1 flex-1">
+                            <h4 id="feedback-title" class="font-black text-lg sm:text-xl">大正解！！</h4>
+                            <p id="feedback-correct-answer" class="text-sm font-extrabold"></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/90 rounded-2xl p-4 text-sm font-bold text-slate-700 leading-relaxed space-y-1.5 border-2 border-black/5">
+                        <div class="text-xs font-black text-indigo-500 uppercase tracking-wider">🦉 かいせつ</div>
+                        <div id="feedback-explanation"></div>
+                    </div>
+
+                    <button id="next-question-btn" class="btn-pop w-full py-3.5 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-black text-base border-b-4 border-slate-950 transition-all flex items-center justify-center gap-2">
+                        <span id="next-btn-label">つぎの問題へ</span>
+                        <span>▶</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. リザルト画面 ==================== -->
+        <section id="view-result" class="hidden space-y-6 animate-fade-in">
+            <div class="bg-white rounded-[2rem] p-6 sm:p-8 shadow-lg border-4 border-amber-200 text-center space-y-5 relative overflow-hidden">
+                <div class="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-5xl shadow-lg border-b-4 border-orange-700/40 animate-bounce-slow" id="result-rank">
+                    S
+                </div>
+                <div class="space-y-1">
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-800" id="result-title">パーフェクト！完全マスター！</h2>
+                    <p class="text-slate-500 font-bold text-sm" id="result-subtitle">この調子で次のステップにも挑戦しよう</p>
+                </div>
+
+                <!-- 今回新しくゲットしたバッジ表示エリア -->
+                <div id="result-new-badges-box" class="hidden bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-300 space-y-2 animate-pop">
+                    <div class="text-xs font-black text-orange-600 tracking-wide">🎉 今回新しくゲットしたバッジ！</div>
+                    <div id="result-new-badges-list" class="flex flex-wrap justify-center gap-2"></div>
+                </div>
+
+                <!-- スコア表示 -->
+                <div class="grid grid-cols-2 gap-3 max-w-sm mx-auto pt-1">
+                    <div class="bg-sky-50 rounded-2xl p-4 border-2 border-sky-200">
+                        <div class="text-xs font-black text-sky-600 mb-1">せいかい数</div>
+                        <div class="text-2xl font-black text-indigo-600 tabular-nums">
+                            <span id="result-correct-count">0</span> <span class="text-sm font-bold text-slate-400">/ <span id="result-total-count">10</span></span>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 rounded-2xl p-4 border-2 border-emerald-200">
+                        <div class="text-xs font-black text-emerald-600 mb-1">せいかい率</div>
+                        <div class="text-2xl font-black text-emerald-600 tabular-nums" id="result-accuracy">100%</div>
+                    </div>
+                </div>
+
+                <!-- アクションボタン -->
+                <div class="flex flex-col sm:flex-row flex-wrap gap-3 justify-center pt-3">
+                    <button id="next-step-btn" class="btn-pop hidden py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-105 text-white font-black text-sm border-b-4 border-emerald-700 shadow-md transition-all">
+                        ➡️ ステップ2へすすむ
+                    </button>
+                    <button id="retry-wrong-btn" class="btn-pop hidden py-3.5 px-6 rounded-2xl bg-amber-400 hover:bg-amber-500 text-white font-black text-sm border-b-4 border-amber-600 shadow-sm transition-all">
+                        まちがえた問題だけリベンジ！
+                    </button>
+                    <button id="retry-all-btn" class="btn-pop py-3.5 px-6 rounded-2xl bg-gradient-to-r from-pink-500 to-orange-500 hover:brightness-105 text-white font-black text-sm border-b-4 border-rose-700 shadow-sm transition-all">
+                        もういちど挑戦する 🔄
+                    </button>
+                    <button id="result-home-btn" class="btn-pop py-3.5 px-6 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-sm border-b-4 border-slate-300 transition-all">
+                        ホームにもどる 🏠
+                    </button>
+                </div>
+            </div>
+
+            <!-- 振り返りリスト -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-black text-slate-600 px-1">📝 もんだいのふりかえり</h3>
+                <div id="result-review-list" class="space-y-3">
+                    <!-- JSで生成 -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="py-6 text-center text-xs font-bold text-slate-400">
+        割合マスター — 「ひ・き・わり」納豆で学んでバッジを集めよう！
+    </footer>
+
+    <!-- ==================== バッジコレクション帳 モーダル ==================== -->
+    <div id="badges-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white rounded-[2rem] max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl border-4 border-amber-300 overflow-hidden">
+            <!-- ヘッダー -->
+            <div class="px-6 py-4 border-b-2 border-amber-100 flex items-center justify-between bg-gradient-to-r from-amber-100 via-yellow-50 to-orange-100">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-2xl">🏅</span>
+                    <div>
+                        <h3 class="font-black text-lg text-slate-800">バッジコレクション帳</h3>
+                        <p class="text-xs font-bold text-amber-700">あつめた数：<span id="modal-badge-count">0 / 20</span></p>
+                    </div>
+                </div>
+                <button id="close-badges-btn" class="p-2 rounded-2xl bg-white/80 text-slate-500 hover:bg-white hover:text-slate-800 transition-colors font-black">
+                    ✕
+                </button>
+            </div>
+
+            <!-- 統計バー -->
+            <div class="px-6 py-3 bg-amber-50/60 border-b border-amber-100 flex flex-wrap items-center justify-center gap-4 text-xs font-extrabold text-slate-600">
+                <div>✅ 累計せいかい：<span id="stat-total-correct" class="text-indigo-600 font-black">0</span>問</div>
+                <div>🔥 最大コンボ：<span id="stat-max-combo" class="text-orange-500 font-black">0</span>連続</div>
+                <div>🔍 見分け正解：<span id="stat-id-correct" class="text-violet-600 font-black">0</span>問</div>
+                <div>🧮 計算正解：<span id="stat-calc-correct" class="text-sky-600 font-black">0</span>問</div>
+            </div>
+
+            <!-- バッジグリッド -->
+            <div id="badge-grid" class="p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                <!-- JSで生成 -->
+            </div>
+
+            <!-- フッター -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                <button id="reset-badges-btn" class="text-xs font-bold text-slate-400 hover:text-rose-500 underline px-2 py-1 transition-colors">
+                    きろくをリセット
+                </button>
+                <button id="close-badges-btn-bottom" class="btn-pop px-6 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-white font-black text-sm border-b-4 border-amber-600 transition-colors">
+                    とじる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 新バッジ獲得お祝いモーダル ==================== -->
+    <div id="badge-unlock-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] max-w-md w-full p-6 sm:p-7 text-center shadow-2xl border-4 border-amber-400 animate-pop space-y-5 relative overflow-hidden">
+            <div class="absolute -top-6 -left-6 text-6xl opacity-20 select-none">🎉</div>
+            <div class="absolute -bottom-4 -right-4 text-6xl opacity-20 select-none">✨</div>
+            <div class="relative z-10 space-y-4">
+                <div class="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-amber-400 to-pink-500 text-white font-black text-xs tracking-wider shadow-sm">
+                    🎊 NEW BADGE GET!! 🎊
+                </div>
+                <h3 class="text-2xl font-black text-slate-800">バッジをゲットしたよ！</h3>
+
+                <!-- 獲得したバッジ一覧 -->
+                <div id="unlock-badge-list" class="space-y-3 max-h-60 overflow-y-auto py-1">
+                    <!-- JSで生成 -->
+                </div>
+
+                <button id="close-unlock-modal-btn" class="btn-pop w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:brightness-105 text-white font-black text-base border-b-4 border-orange-600 shadow-md">
+                    やったね！つぎへ ✨
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 📖 公式＆見分け方ガイド モーダル（「ひ・き・わり」納豆版） ==================== -->
+    <div id="guide-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white rounded-3xl max-w-lg w-full max-h-[88vh] flex flex-col shadow-2xl border-4 border-amber-200 overflow-hidden">
+            <!-- モーダルヘッダー -->
+            <div class="px-6 py-4 border-b-2 border-amber-100 flex items-center justify-between bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50">
+                <h3 class="font-black text-lg text-slate-900 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-amber-500 text-white inline-flex items-center justify-center text-base font-black shadow-sm">📖</span>
+                    公式＆見分け方ガイド
+                </h3>
+                <button id="close-guide-btn" class="p-2 rounded-xl text-slate-400 hover:bg-amber-100 hover:text-slate-700 transition-colors font-black">
+                    ✕
+                </button>
+            </div>
+
+            <!-- モーダル本文 -->
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-700">
+                <!-- 「ひ・き・わり」納豆 SVG図解 -->
+                <div class="bg-gradient-to-b from-amber-50 to-orange-50/60 rounded-3xl p-4 sm:p-5 border-2 border-amber-200 flex flex-col items-center">
+                    <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-white font-black text-xs sm:text-sm shadow-sm mb-1.5">
+                        <span>🫘</span>
+                        <span>「ひ・き・わり」納豆で覚えよう！</span>
+                    </div>
+                    <p class="text-xs font-bold text-amber-800 mb-3 text-center">
+                        <strong>比</strong>較量・<strong>基</strong>準量・<strong>割</strong>合の頭文字をとった合言葉だよ！
+                    </p>
+
+                    <!-- 納豆パック風T字図解 SVG -->
+                    <svg viewBox="0 0 300 205" class="w-64 sm:w-72 h-auto drop-shadow-sm">
+                        <!-- 納豆パックの外枠（白い発泡スチロールパック風） -->
+                        <rect x="14" y="14" width="272" height="177" rx="28" fill="#ffffff" stroke="#d97706" stroke-width="4"/>
+                        <!-- パックの内側のフチ -->
+                        <rect x="24" y="24" width="252" height="157" rx="20" fill="#fffbeb" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6 4"/>
+
+                        <!-- かわいい納豆の粒イラスト（装飾） -->
+                        <ellipse cx="48" cy="46" rx="10" ry="6" transform="rotate(-20 48 46)" fill="#b45309"/>
+                        <ellipse cx="62" cy="42" rx="9" ry="5.5" transform="rotate(15 62 42)" fill="#92400e"/>
+                        <ellipse cx="55" cy="56" rx="9.5" ry="5.5" transform="rotate(10 55 56)" fill="#d97706"/>
+                        <!-- ネギのワンポイント -->
+                        <circle cx="248" cy="44" r="7" fill="#10b981"/>
+                        <circle cx="248" cy="44" r="3" fill="#ecfdf5"/>
+                        <circle cx="236" cy="54" r="6" fill="#34d399"/>
+                        <circle cx="236" cy="54" r="2.5" fill="#ecfdf5"/>
+
+                        <!-- T字型の仕切り線（横線＝割り算、縦線＝掛け算） -->
+                        <line x1="36" y1="102" x2="264" y2="102" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="150" y1="102" x2="150" y2="174" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+
+                        <!-- 上段：ひ（比較量） -->
+                        <text x="150" y="68" text-anchor="middle" font-size="30" font-weight="900" fill="#e11d48">ひ</text>
+                        <text x="150" y="90" text-anchor="middle" font-size="13" font-weight="900" fill="#9f1239">比較量（比べられる量）</text>
+
+                        <!-- 下段左：き（基準量） -->
+                        <text x="92" y="142" text-anchor="middle" font-size="28" font-weight="900" fill="#059669">き</text>
+                        <text x="92" y="162" text-anchor="middle" font-size="12" font-weight="900" fill="#065f46">基準量（もと）</text>
+
+                        <!-- 下段右：わり（割合） -->
+                        <text x="208" y="142" text-anchor="middle" font-size="26" font-weight="900" fill="#d97706">わり</text>
+                        <text x="208" y="162" text-anchor="middle" font-size="12" font-weight="900" fill="#92400e">割合</text>
+
+                        <!-- 演算記号バッジ（÷ と ×） -->
+                        <circle cx="150" cy="102" r="13" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+                        <text x="150" y="107" text-anchor="middle" font-size="15" font-weight="900" fill="#b45309">÷</text>
+
+                        <circle cx="150" cy="142" r="13" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+                        <text x="150" y="147" text-anchor="middle" font-size="15" font-weight="900" fill="#b45309">×</text>
+                    </svg>
+
+                    <p class="text-xs font-extrabold text-amber-900 mt-2.5 text-center bg-white/80 px-3 py-1.5 rounded-xl border border-amber-200">
+                        👆 求めたい文字を指でかくすと、計算の式がそのまま出てくるよ！
+                    </p>
+                </div>
+
+                <!-- 1. 3つの公式（色分けカード） -->
+                <div class="space-y-2.5">
+                    <h4 class="font-black text-slate-900 text-base">1. 「ひ・き・わり」の3つの公式</h4>
+                    <div class="grid gap-2.5">
+                        <div class="p-3.5 rounded-2xl bg-amber-50 border-2 border-amber-200 font-black text-amber-900 flex items-center justify-between">
+                            <span>割合（わり） ＝ 比較量（ひ） ÷ 基準量（き）</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">わり算</span>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-rose-50 border-2 border-rose-200 font-black text-rose-900 flex items-center justify-between">
+                            <span>比較量（ひ） ＝ 基準量（き） × 割合（わり）</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-rose-200 text-rose-900">かけ算</span>
+                        </div>
+                        <div class="p-3.5 rounded-2xl bg-emerald-50 border-2 border-emerald-200 font-black text-emerald-900 flex items-center justify-between">
+                            <span>基準量（き） ＝ 比較量（ひ） ÷ 割合（わり）</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">わり算</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 文章からの見分け方のコツ -->
+                <div class="space-y-2.5">
+                    <h4 class="font-black text-slate-900 text-base">2. 文章からの見分け方のコツ</h4>
+                    <ul class="space-y-2.5 text-xs sm:text-sm bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <li class="flex gap-2 items-start">
+                            <span class="font-black text-emerald-600 shrink-0">● 基準量（き）：</span>
+                            <span class="font-bold text-slate-700">「〜の」「〜をもとにすると」「〜に対して」「〜より」の<strong>前の数</strong>。割合の基準となる「1（100%）」にあたる量です。</span>
+                        </li>
+                        <li class="flex gap-2 items-start">
+                            <span class="font-black text-rose-600 shrink-0">● 比較量（ひ）：</span>
+                            <span class="font-bold text-slate-700">「〜にあたる」「〜は」の<strong>前の数</strong>。基準量と比べられる相手の量です。</span>
+                        </li>
+                        <li class="flex gap-2 items-start">
+                            <span class="font-black text-amber-600 shrink-0">● 割合（わり）：</span>
+                            <span class="font-bold text-slate-700">「〇倍」「〇％」「〇割」などの数。計算するときは小数に直します（例：30% → 0.3、8割 → 0.8）。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 3. 割引・割増のコツ -->
+                <div class="space-y-1.5 bg-indigo-50/70 p-4 rounded-2xl border-2 border-indigo-100">
+                    <h4 class="font-black text-indigo-900 text-xs sm:text-sm">3. 割引・割増（上級・超級）のコツ</h4>
+                    <p class="text-xs font-bold text-indigo-800 leading-relaxed">
+                        ・<strong>20%引き</strong> ＝ 1 － 0.2 ＝ <strong>0.8</strong><br>
+                        ・<strong>15%増し</strong> ＝ 1 ＋ 0.15 ＝ <strong>1.15</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- モーダルフッター -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50">
+                <button id="close-guide-btn-bottom" class="btn-pop w-full py-3 rounded-2xl bg-amber-400 hover:bg-amber-500 text-white font-black text-sm border-b-4 border-amber-600 transition-colors">
+                    わかった！とじる 👍
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト通知用（alertの代わり） -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold animate-pop">
+        メッセージ
+    </div>
+
+    <script>
+        /**
+         * ==========================================
+         * 問題データベース
+         * 初級20問（見分け10＋計算10）
+         * 中級20問（見分け10＋計算10）
+         * 上級20問（見分け10＋計算10）
+         * レジェンド15問（計算のみ・ランダム5問出題）
+         * ※ヒント・解説はすべて「基準量」「比較量」「割合」に統一
+         * ==========================================
+         */
+        const QUESTION_BANK = {
+            beginner: [
+                // --- 初級：見分け問題（10問） ---
+                {
+                    id: 'b-id-1',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '赤のリボンは 6 m で、白のリボンは 3 m です。白のリボンをもとにすると、赤のリボンは 2 倍です。',
+                    choices: ['6 m', '3 m', '2（2倍）'],
+                    answer: { base: '3 m', compare: '6 m', rate: '2（2倍）' },
+                    hint: '「〜をもとにすると」のすぐ前にあるのが基準量（き）です。',
+                    explanation: '「白のリボンをもとにすると」とあるので、白のリボン（3 m）が<strong>基準量</strong>です。比べられている赤のリボン（6 m）が<strong>比較量</strong>、「2倍」が<strong>割合</strong>になります。'
+                },
+                {
+                    id: 'b-id-2',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '定員 40 人のバスに、30 人が乗っています。定員に対する乗客の割合は 0.75 です。',
+                    choices: ['40 人', '30 人', '0.75'],
+                    answer: { base: '40 人', compare: '30 人', rate: '0.75' },
+                    hint: '「〜に対する」の前にある量が基準量（き）です。',
+                    explanation: '「定員に対する」とあるので、定員（40 人）が<strong>基準量</strong>、乗客（30 人）が<strong>比較量</strong>、0.75 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-3',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '500 円の 0.4 倍は 200 円です。',
+                    choices: ['500 円', '200 円', '0.4（0.4倍）'],
+                    answer: { base: '500 円', compare: '200 円', rate: '0.4（0.4倍）' },
+                    hint: '「〜の 0.4 倍」のように、「〜の」の前にあるのが基準量（き）です。',
+                    explanation: '「500 円の 0.4 倍」とあるので、500 円が<strong>基準量</strong>、0.4 が<strong>割合</strong>、結果の 200 円が<strong>比較量</strong>です。'
+                },
+                {
+                    id: 'b-id-4',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: 'クラスの人数は 32 人で、そのうち 0.25 倍にあたる 8 人が給食当番です。',
+                    choices: ['32 人', '8 人', '0.25'],
+                    answer: { base: '32 人', compare: '8 人', rate: '0.25' },
+                    hint: '全体（クラスの人数）が基準量（き）の「1」にあたります。',
+                    explanation: 'クラス全体（32 人）を基準にしているので 32 人が<strong>基準量</strong>、給食当番の 8 人が<strong>比較量</strong>、0.25 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-5',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '兄の体重は 48 kg、弟は 32 kg です。弟の体重をもとにすると、兄の体重は 1.5 倍です。',
+                    choices: ['48 kg', '32 kg', '1.5（1.5倍）'],
+                    answer: { base: '32 kg', compare: '48 kg', rate: '1.5（1.5倍）' },
+                    hint: '「弟の体重をもとにすると」に注目しよう。',
+                    explanation: '基準にするのは弟の体重（32 kg）なので<strong>基準量</strong>は 32 kg、比べられる兄の体重（48 kg）が<strong>比較量</strong>、1.5 倍が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-6',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '1000 mL のジュースのうち、0.6 倍の 600 mL を飲みました。',
+                    choices: ['1000 mL', '600 mL', '0.6'],
+                    answer: { base: '1000 mL', compare: '600 mL', rate: '0.6' },
+                    hint: 'ジュース全体の量が基準量（き）になります。',
+                    explanation: '全体の 1000 mL が<strong>基準量</strong>、飲んだ 600 mL が<strong>比較量</strong>、0.6 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-7',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '青いテープは 10 cm、黄色のテープは 3 cm です。青いテープをもとにすると、黄色のテープは 0.3 倍です。',
+                    choices: ['10 cm', '3 cm', '0.3（0.3倍）'],
+                    answer: { base: '10 cm', compare: '3 cm', rate: '0.3（0.3倍）' },
+                    hint: '「青いテープをもとにすると」と書いてあるよ。',
+                    explanation: '青いテープ（10 cm）が<strong>基準量</strong>、黄色のテープ（3 cm）が<strong>比較量</strong>、0.3 倍が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-8',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '公園にハトが 20 羽、スズメが 50 羽います。ハトの数に対するスズメの割合は 2.5 です。',
+                    choices: ['20 羽', '50 羽', '2.5'],
+                    answer: { base: '20 羽', compare: '50 羽', rate: '2.5' },
+                    hint: '「〜に対する」の前にあるのが基準量（き）です。',
+                    explanation: '「ハトの数に対する」とあるので、ハト（20 羽）が<strong>基準量</strong>、スズメ（50 羽）が<strong>比較量</strong>、2.5 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-9',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '150 ページの本の 0.8 倍にあたる 120 ページを読みました。',
+                    choices: ['150 ページ', '120 ページ', '0.8'],
+                    answer: { base: '150 ページ', compare: '120 ページ', rate: '0.8' },
+                    hint: '本全体（150 ページ）が基準量（き）になります。',
+                    explanation: '「150 ページの本の 0.8 倍」なので、150 ページが<strong>基準量</strong>、120 ページが<strong>比較量</strong>、0.8 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'b-id-10',
+                    type: 'identify',
+                    instruction: '問題文から「基準量（き）・比較量（ひ）・割合（わり）」にあたる数をそれぞれ選んでください。',
+                    text: '鉛筆の重さは 40 g、筆箱の重さは 200 g です。鉛筆の重さをもとにすると、筆箱は 5 倍です。',
+                    choices: ['40 g', '200 g', '5（5倍）'],
+                    answer: { base: '40 g', compare: '200 g', rate: '5（5倍）' },
+                    hint: '「鉛筆の重さをもとにすると」に注目しよう。',
+                    explanation: '鉛筆の重さ（40 g）が<strong>基準量</strong>、筆箱の重さ（200 g）が<strong>比較量</strong>、5 倍が<strong>割合</strong>です。'
+                },
+                // --- 初級：計算問題（10問） ---
+                {
+                    id: 'b-calc-1',
+                    type: 'calc',
+                    instruction: '割合を小数で求めてください。',
+                    text: '20 m をもとにしたとき、5 m の割合はいくつですか。',
+                    answer: 0.25,
+                    unit: '',
+                    hint: '基準量（き）＝20 m、比較量（ひ）＝5 m です。「割合 ＝ 比較量 ÷ 基準量」を使います。',
+                    explanation: '基準量は 20 m、比較量は 5 m です。<br>割合 ＝ 比較量 ÷ 基準量 ＝ 5 ÷ 20 ＝ <strong>0.25</strong> となります。'
+                },
+                {
+                    id: 'b-calc-2',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '80 個の 0.3 倍は何個ですか。',
+                    answer: 24,
+                    unit: '個',
+                    hint: '基準量（き）＝80 個、割合（わり）＝0.3 です。「比較量 ＝ 基準量 × 割合」を使います。',
+                    explanation: '「80 個の」なので 80 個が基準量、0.3 が割合です。<br>比較量 ＝ 基準量 × 割合 ＝ 80 × 0.3 ＝ <strong>24 個</strong> となります。'
+                },
+                {
+                    id: 'b-calc-3',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある長さの 0.5 倍が 12 cm です。基準量（もとの長さ）は何 cm ですか。',
+                    answer: 24,
+                    unit: 'cm',
+                    hint: '比較量（ひ）＝12 cm、割合（わり）＝0.5 です。「基準量 ＝ 比較量 ÷ 割合」で求めます。',
+                    explanation: '<strong>基準量</strong>を求める問題です。<br>基準量 ＝ 比較量 ÷ 割合 ＝ 12 ÷ 0.5 ＝ <strong>24 cm</strong> となります。'
+                },
+                {
+                    id: 'b-calc-4',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '400 円の 0.7 倍は何円ですか。',
+                    answer: 280,
+                    unit: '円',
+                    hint: '基準量（き）＝400 円、割合（わり）＝0.7 です。かけ算で比較量（ひ）を求めましょう。',
+                    explanation: '基準量は 400 円、割合は 0.7 です。<br>比較量 ＝ 400 × 0.7 ＝ <strong>280 円</strong> となります。'
+                },
+                {
+                    id: 'b-calc-5',
+                    type: 'calc',
+                    instruction: '割合を小数で求めてください。',
+                    text: '50 人をもとにしたとき、30 人の割合はいくつですか。',
+                    answer: 0.6,
+                    unit: '',
+                    hint: '基準量（き）＝50 人、比較量（ひ）＝30 人です。30 ÷ 50 を計算しよう。',
+                    explanation: '割合 ＝ 比較量 ÷ 基準量 ＝ 30 ÷ 50 ＝ <strong>0.6</strong> となります。'
+                },
+                {
+                    id: 'b-calc-6',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '120 g の 1.5 倍は何 g ですか。',
+                    answer: 180,
+                    unit: 'g',
+                    hint: '基準量（き）＝120 g、割合（わり）＝1.5 です。かけ算で比較量（ひ）を求めよう。',
+                    explanation: '比較量 ＝ 120 × 1.5 ＝ <strong>180 g</strong> となります。'
+                },
+                {
+                    id: 'b-calc-7',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある数の 0.2 倍が 18 です。基準量（もとの数）はいくつですか。',
+                    answer: 90,
+                    unit: '',
+                    hint: '基準量（き）＝ 比較量（ひ） ÷ 割合（わり）。18 ÷ 0.2 を計算しよう。',
+                    explanation: '基準量 ＝ 18 ÷ 0.2 ＝ <strong>90</strong> となります。'
+                },
+                {
+                    id: 'b-calc-8',
+                    type: 'calc',
+                    instruction: '割合を小数で求めてください。',
+                    text: '40 L をもとにしたとき、60 L の割合はいくつですか。',
+                    answer: 1.5,
+                    unit: '',
+                    hint: '基準量（き）＝40 L、比較量（ひ）＝60 L です。比較量の方が大きくても割り算の順番は同じ！',
+                    explanation: '割合 ＝ 比較量 ÷ 基準量 ＝ 60 ÷ 40 ＝ <strong>1.5</strong> となります。'
+                },
+                {
+                    id: 'b-calc-9',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '250 m の 0.8 倍は何 m ですか。',
+                    answer: 200,
+                    unit: 'm',
+                    hint: '基準量（き）＝250 m、割合（わり）＝0.8 です。250 × 0.8 を計算しよう。',
+                    explanation: '比較量 ＝ 250 × 0.8 ＝ <strong>200 m</strong> となります。'
+                },
+                {
+                    id: 'b-calc-10',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある金額の 0.4 倍が 360 円です。基準量（もとの金額）は何円ですか。',
+                    answer: 900,
+                    unit: '円',
+                    hint: '基準量（き）＝ 比較量（ひ） ÷ 割合（わり）。360 ÷ 0.4 で求めます。',
+                    explanation: '基準量 ＝ 360 ÷ 0.4 ＝ <strong>900 円</strong> となります。'
+                }
+            ],
+
+            intermediate: [
+                // --- 中級：見分け問題（10問） ---
+                {
+                    id: 'm-id-1',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: '全校生徒 300 人のうち、45% が眼鏡をかけています。眼鏡をかけている人は何人ですか。',
+                    choices: ['300 人', '求めるもの', '0.45', '45'],
+                    answer: { base: '300 人', compare: '求めるもの', rate: '0.45' },
+                    hint: '45% は小数に直すと 0.45 です。「全校生徒 300 人のうち」なので全体が基準量（き）です。',
+                    explanation: '全校生徒（300 人）が<strong>基準量</strong>、眼鏡をかけている人が<strong>比較量</strong>（求めるもの）、45% ＝ 0.45 が<strong>割合</strong>になります。'
+                },
+                {
+                    id: 'm-id-2',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: 'ある本を 36 ページ読みました。これは本全体の 3 割にあたります。この本は全部で何ページですか。',
+                    choices: ['求めるもの', '36 ページ', '0.3', '3'],
+                    answer: { base: '求めるもの', compare: '36 ページ', rate: '0.3' },
+                    hint: '「本全体の 3 割」とあるので、本全体が基準量（き）です。3割 ＝ 0.3 です。',
+                    explanation: '「本全体の」とあるので本全体（求めるもの）が<strong>基準量</strong>、読んだ 36 ページが<strong>比較量</strong>、3割 ＝ 0.3 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'm-id-3',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」を選びましょう）',
+                    text: '25 回のシュートのうち、17 回入りました。入った回数は、打った回数の何 % ですか。',
+                    choices: ['25 回', '17 回', '求めるもの'],
+                    answer: { base: '25 回', compare: '17 回', rate: '求めるもの' },
+                    hint: '「打った回数の何%」なので、打った回数（25回）が基準量（き）です。',
+                    explanation: '打った回数（25 回）が<strong>基準量</strong>、入った回数（17 回）が<strong>比較量</strong>、求めるものが<strong>割合</strong>（%）になります。'
+                },
+                {
+                    id: 'm-id-4',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: '600 円の貯金箱から、15% にあたるお金を使いました。いくら使いましたか。',
+                    choices: ['600 円', '求めるもの', '0.15', '15'],
+                    answer: { base: '600 円', compare: '求めるもの', rate: '0.15' },
+                    hint: '15% ＝ 0.15 です。貯金箱全体（600円）が基準量（き）になります。',
+                    explanation: '貯金箱の 600 円が<strong>基準量</strong>、使った金額が<strong>比較量</strong>（求めるもの）、15% ＝ 0.15 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'm-id-5',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: '畑でとれたじゃがいものうち、28 kg を売りました。これは全体の 7 割です。全部で何 kg とれましたか。',
+                    choices: ['求めるもの', '28 kg', '0.7', '7'],
+                    answer: { base: '求めるもの', compare: '28 kg', rate: '0.7' },
+                    hint: '「全体の 7 割」なので、全体（求めるもの）が基準量（き）です。',
+                    explanation: '全体（求めるもの）が<strong>基準量</strong>、売った 28 kg が<strong>比較量</strong>、7割 ＝ 0.7 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'm-id-6',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」を選びましょう）',
+                    text: '50 問のテストで 42 問正解しました。正解数は全体の何 % ですか。',
+                    choices: ['50 問', '42 問', '求めるもの'],
+                    answer: { base: '50 問', compare: '42 問', rate: '求めるもの' },
+                    hint: '「全体の何%」なので、テスト全体（50問）が基準量（き）です。',
+                    explanation: 'テスト全体（50 問）が<strong>基準量</strong>、正解数（42 問）が<strong>比較量</strong>、<strong>割合</strong>が求めるものになります。'
+                },
+                {
+                    id: 'm-id-7',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: '400 g の小麦粉のうち、25% を使ってパンを焼きました。使った小麦粉は何 g ですか。',
+                    choices: ['400 g', '求めるもの', '0.25', '2.5'],
+                    answer: { base: '400 g', compare: '求めるもの', rate: '0.25' },
+                    hint: '25% ＝ 0.25 です。全体の 400 g が基準量（き）です。',
+                    explanation: '全体の 400 g が<strong>基準量</strong>、使った小麦粉が<strong>比較量</strong>（求めるもの）、25% ＝ 0.25 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'm-id-8',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: 'ある道のりの 6 割を歩いたところ、900 m 進みました。全部で何 m ですか。',
+                    choices: ['求めるもの', '900 m', '0.6', '6'],
+                    answer: { base: '求めるもの', compare: '900 m', rate: '0.6' },
+                    hint: '「ある道のりの 6 割」なので、道のり全体が基準量（き）です。',
+                    explanation: '道のり全体（求めるもの）が<strong>基準量</strong>、歩いた 900 m が<strong>比較量</strong>、6割 ＝ 0.6 が<strong>割合</strong>です。'
+                },
+                {
+                    id: 'm-id-9',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」を選びましょう）',
+                    text: '電車に 120 人乗っています。定員は 80 人です。定員に対する乗客の割合は何 % ですか。',
+                    choices: ['80 人', '120 人', '求めるもの'],
+                    answer: { base: '80 人', compare: '120 人', rate: '求めるもの' },
+                    hint: '「定員に対する」なので、定員（80人）が基準量（き）です。',
+                    explanation: '定員（80 人）が<strong>基準量</strong>、乗客（120 人）が<strong>比較量</strong>、<strong>割合</strong>が求めるものになります。'
+                },
+                {
+                    id: 'm-id-10',
+                    type: 'identify',
+                    instruction: '3つの要素を整理してください。（求めたいものは「求めるもの」、割合は小数で選びましょう）',
+                    text: '野球の試合で、打数 20 回のうち 3 割 5 分のヒットを打ちました。ヒットは何本ですか。',
+                    choices: ['20 回', '求めるもの', '0.35', '3.5'],
+                    answer: { base: '20 回', compare: '求めるもの', rate: '0.35' },
+                    hint: '3割5分は小数に直すと 0.35 です。打数 20 回が基準量（き）になります。',
+                    explanation: '打数（20 回）が<strong>基準量</strong>、ヒットの本数が<strong>比較量</strong>（求めるもの）、3割5分 ＝ 0.35 が<strong>割合</strong>です。'
+                },
+                // --- 中級：計算問題（10問） ---
+                {
+                    id: 'm-calc-1',
+                    type: 'calc',
+                    instruction: '百分率（%）で答えてください。',
+                    text: '25 回のシュートのうち、17 回入りました。入った回数は、打った回数の何 % ですか。',
+                    answer: 68,
+                    unit: '%',
+                    hint: '割合 ＝ 比較量（17） ÷ 基準量（25）で小数を求めたあと、100倍して % に直しましょう。',
+                    explanation: '割合 ＝ 17 ÷ 25 ＝ 0.68。百分率（%）に直すため 100 倍すると <strong>68 %</strong> となります。'
+                },
+                {
+                    id: 'm-calc-2',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '定価 1200 円の本を、定価の 8 割の値段で買いました。代金はいくらですか。',
+                    answer: 960,
+                    unit: '円',
+                    hint: '8割 ＝ 0.8 です。「比較量 ＝ 基準量（1200） × 割合（0.8）」で代金を求めましょう。',
+                    explanation: '基準量は 1200 円、割合は 8割 ＝ 0.8 です。<br>比較量 ＝ 1200 × 0.8 ＝ <strong>960 円</strong> となります。'
+                },
+                {
+                    id: 'm-calc-3',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '水そうに水が入っています。今日使った 18 L は、はじめに入っていた水の量の 30% にあたります。はじめに入っていた水は何 L ですか。',
+                    answer: 60,
+                    unit: 'L',
+                    hint: 'はじめの量（基準量）を求める問題です。30% ＝ 0.3 なので、比較量（18） ÷ 割合（0.3）を計算します。',
+                    explanation: '比較量は 18 L、割合は 30% ＝ 0.3 です。<br>基準量 ＝ 18 ÷ 0.3 ＝ <strong>60 L</strong> となります。'
+                },
+                {
+                    id: 'm-calc-4',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '全校生徒 300 人のうち、45% が眼鏡をかけています。眼鏡をかけている人は何人ですか。',
+                    answer: 135,
+                    unit: '人',
+                    hint: '45% ＝ 0.45 です。基準量（300） × 割合（0.45）を計算しましょう。',
+                    explanation: '基準量は 300 人、割合は 0.45 です。<br>比較量 ＝ 300 × 0.45 ＝ <strong>135 人</strong> となります。'
+                },
+                {
+                    id: 'm-calc-5',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある本を 36 ページ読みました。これは本全体の 3 割にあたります。この本は全部で何ページですか。',
+                    answer: 120,
+                    unit: 'ページ',
+                    hint: '本全体（基準量）を求めます。3割 ＝ 0.3 なので、比較量（36） ÷ 割合（0.3）を計算します。',
+                    explanation: '比較量は 36 ページ、割合は 0.3 です。<br>基準量 ＝ 36 ÷ 0.3 ＝ <strong>120 ページ</strong> となります。'
+                },
+                {
+                    id: 'm-calc-6',
+                    type: 'calc',
+                    instruction: '百分率（%）で答えてください。',
+                    text: '80 点満点のテストで 64 点とりました。満点の何 % ですか。',
+                    answer: 80,
+                    unit: '%',
+                    hint: '比較量（64） ÷ 基準量（80）を計算して小数にしたあと、100倍して % に直そう。',
+                    explanation: '割合 ＝ 64 ÷ 80 ＝ 0.8。100 倍すると <strong>80 %</strong> となります。'
+                },
+                {
+                    id: 'm-calc-7',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '500 g の肉のうち、3 割 5 分を料理に使いました。何 g 使いましたか。',
+                    answer: 175,
+                    unit: 'g',
+                    hint: '3割5分 ＝ 0.35 です。基準量（500） × 割合（0.35）を計算しよう。',
+                    explanation: '基準量は 500 g、割合は 0.35 です。<br>比較量 ＝ 500 × 0.35 ＝ <strong>175 g</strong> となります。'
+                },
+                {
+                    id: 'm-calc-8',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある金額の 40% が 2400 円です。基準量（もとの金額）は何円ですか。',
+                    answer: 6000,
+                    unit: '円',
+                    hint: '基準量（き）＝ 比較量（2400） ÷ 割合（0.4）で求めます。',
+                    explanation: '比較量は 2400 円、割合は 0.4 です。<br>基準量 ＝ 2400 ÷ 0.4 ＝ <strong>6000 円</strong> となります。'
+                },
+                {
+                    id: 'm-calc-9',
+                    type: 'calc',
+                    instruction: '百分率（%）で答えてください。',
+                    text: '定員 80 人のホールに 100 人入りました。定員の何 % ですか。',
+                    answer: 125,
+                    unit: '%',
+                    hint: '定員（80人）が基準量です。比較量（100） ÷ 基準量（80）を計算して 100 倍しよう。',
+                    explanation: '割合 ＝ 100 ÷ 80 ＝ 1.25。100 倍すると <strong>125 %</strong> となります。'
+                },
+                {
+                    id: 'm-calc-10',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '250 mL のジュースの 64% を飲みました。飲んだ量は何 mL ですか。',
+                    answer: 160,
+                    unit: 'mL',
+                    hint: '64% ＝ 0.64 です。基準量（250） × 割合（0.64）を計算しよう。',
+                    explanation: '基準量は 250 mL、割合は 0.64 です。<br>比較量 ＝ 250 × 0.64 ＝ <strong>160 mL</strong> となります。'
+                }
+            ],
+
+            advanced: [
+                // --- 上級：見分け問題（10問） ---
+                {
+                    id: 'a-id-1',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '2000 円のシャツが、定価の 20% 引きで売られています。売値はいくらですか。',
+                    choices: ['2000 円', '求めるもの', '0.8', '0.2', '1.2'],
+                    answer: { base: '2000 円', compare: '求めるもの', rate: '0.8' },
+                    hint: '定価（1）から 20%（0.2）を引くので、売値の割合は 1 － 0.2 になります。',
+                    explanation: '定価（2000 円）が<strong>基準量</strong>、売値が<strong>比較量</strong>（求めるもの）です。20% 引きなので<strong>割合</strong>は 1 － 0.2 ＝ <strong>0.8</strong> を使います。'
+                },
+                {
+                    id: 'a-id-2',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '今年の収穫量は 230 kg で、昨年より 15% 増えました。昨年の収穫量は何 kg ですか。',
+                    choices: ['求めるもの', '230 kg', '1.15', '0.15', '0.85'],
+                    answer: { base: '求めるもの', compare: '230 kg', rate: '1.15' },
+                    hint: '「昨年より」なので昨年が基準量（1）です。15% 増えたので 1 ＋ 0.15 になります。',
+                    explanation: '昨年（求めるもの）が<strong>基準量</strong>、今年（230 kg）が<strong>比較量</strong>です。15% 増えたので今年の<strong>割合</strong>は 1 ＋ 0.15 ＝ <strong>1.15</strong> です。'
+                },
+                {
+                    id: 'a-id-3',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: 'ある店の今月の売上は 42 万円で、先月より 3 割減りました。先月の売上は何万円ですか。',
+                    choices: ['求めるもの', '42 万円', '0.7', '0.3', '1.3'],
+                    answer: { base: '求めるもの', compare: '42 万円', rate: '0.7' },
+                    hint: '「先月より」なので先月が基準量（1）です。3割（0.3）減ったので 1 － 0.3 です。',
+                    explanation: '先月（求めるもの）が<strong>基準量</strong>、今月（42 万円）が<strong>比較量</strong>です。3割減なので<strong>割合</strong>は 1 － 0.3 ＝ <strong>0.7</strong> となります。'
+                },
+                {
+                    id: 'a-id-4',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '1500 円の商品に 10% の消費税がつきます。税込み価格はいくらですか。',
+                    choices: ['1500 円', '求めるもの', '1.1', '0.1', '0.9'],
+                    answer: { base: '1500 円', compare: '求めるもの', rate: '1.1' },
+                    hint: '基準量（1）に 10%（0.1）を足すので 1 ＋ 0.1 です。',
+                    explanation: '税抜き価格（1500 円）が<strong>基準量</strong>、税込み価格が<strong>比較量</strong>（求めるもの）、<strong>割合</strong>は 1 ＋ 0.1 ＝ <strong>1.1</strong> です。'
+                },
+                {
+                    id: 'a-id-5',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: 'ある商品を定価の 2 割 5 分引きで買ったら 900 円でした。定価はいくらですか。',
+                    choices: ['求めるもの', '900 円', '0.75', '0.25', '1.25'],
+                    answer: { base: '求めるもの', compare: '900 円', rate: '0.75' },
+                    hint: '2割5分 ＝ 0.25 なので、1 － 0.25 ＝ 0.75 になります。',
+                    explanation: '定価（求めるもの）が<strong>基準量</strong>、代金（900 円）が<strong>比較量</strong>、<strong>割合</strong>は 1 － 0.25 ＝ <strong>0.75</strong> です。'
+                },
+                {
+                    id: 'a-id-6',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '仕入れ値 600 円のケーキに、3 割の利益を見込んで定価をつけました。定価はいくらですか。',
+                    choices: ['600 円', '求めるもの', '1.3', '0.3', '0.7'],
+                    answer: { base: '600 円', compare: '求めるもの', rate: '1.3' },
+                    hint: '仕入れ値（1）に 3割（0.3）を足すので 1.3 です。',
+                    explanation: '仕入れ値（600 円）が<strong>基準量</strong>、定価が<strong>比較量</strong>（求めるもの）、<strong>割合</strong>は 1 ＋ 0.3 ＝ <strong>1.3</strong> です。'
+                },
+                {
+                    id: 'a-id-7',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '体重が先月より 5% 減って 57 kg になりました。先月の体重は何 kg ですか。',
+                    choices: ['求めるもの', '57 kg', '0.95', '0.05', '1.05'],
+                    answer: { base: '求めるもの', compare: '57 kg', rate: '0.95' },
+                    hint: '5% ＝ 0.05 です。1 － 0.05 ＝ 0.95 になります。',
+                    explanation: '先月（求めるもの）が<strong>基準量</strong>、今月（57 kg）が<strong>比較量</strong>、<strong>割合</strong>は 1 － 0.05 ＝ <strong>0.95</strong> です。'
+                },
+                {
+                    id: 'a-id-8',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '普段 400 mL 入りの洗剤が 20% 増量して売られています。何 mL 入りですか。',
+                    choices: ['400 mL', '求めるもの', '1.2', '0.2', '0.8'],
+                    answer: { base: '400 mL', compare: '求めるもの', rate: '1.2' },
+                    hint: '20% 増量なので、1 ＋ 0.2 ＝ 1.2 です。',
+                    explanation: '普段の量（400 mL）が<strong>基準量</strong>、増量後が<strong>比較量</strong>（求めるもの）、<strong>割合</strong>は 1 ＋ 0.2 ＝ <strong>1.2</strong> です。'
+                },
+                {
+                    id: 'a-id-9',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '会員証を見せると 15% 引きになり、代金は 1700 円でした。もとの値段はいくらですか。',
+                    choices: ['求めるもの', '1700 円', '0.85', '0.15', '1.15'],
+                    answer: { base: '求めるもの', compare: '1700 円', rate: '0.85' },
+                    hint: '15% 引きなので、1 － 0.15 ＝ 0.85 です。',
+                    explanation: 'もとの値段（求めるもの）が<strong>基準量</strong>、代金（1700 円）が<strong>比較量</strong>、<strong>割合</strong>は 1 － 0.15 ＝ <strong>0.85</strong> です。'
+                },
+                {
+                    id: 'a-id-10',
+                    type: 'identify',
+                    instruction: '増減をふまえて3つの要素を整理してください。（計算に使う割合を小数で選びましょう）',
+                    text: '町の人口が 10 年前より 4 割増えて 7000 人になりました。10 年前の人口は何人ですか。',
+                    choices: ['求めるもの', '7000 人', '1.4', '0.4', '0.6'],
+                    answer: { base: '求めるもの', compare: '7000 人', rate: '1.4' },
+                    hint: '「10年前より」なので 10年前が基準量（1）です。4割増えたので 1.4 です。',
+                    explanation: '10年前（求めるもの）が<strong>基準量</strong>、現在（7000 人）が<strong>比較量</strong>、<strong>割合</strong>は 1 ＋ 0.4 ＝ <strong>1.4</strong> です。'
+                },
+                // --- 上級：計算問題（10問） ---
+                {
+                    id: 'a-calc-1',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '定価 3500 円のくつが、3 割引きで売られています。代金はいくらですか。',
+                    answer: 2450,
+                    unit: '円',
+                    hint: '3割引きなので、代金の割合は 1 － 0.3 ＝ 0.7 です。「比較量 ＝ 基準量 × 割合」を使います。',
+                    explanation: '基準量は 3500 円、割合は 1 － 0.3 ＝ 0.7 です。<br>比較量 ＝ 3500 × 0.7 ＝ <strong>2450 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-2',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '今年の参加人数は 276 人で、昨年より 15% 増えました。昨年の参加人数は何人ですか。',
+                    answer: 240,
+                    unit: '人',
+                    hint: '昨年（基準量）を求めます。今年の割合は 1 ＋ 0.15 ＝ 1.15 なので、比較量（276） ÷ 割合（1.15）を計算します。',
+                    explanation: '比較量は 276 人、割合は 1 ＋ 0.15 ＝ 1.15 です。<br>基準量（昨年の人数）＝ 276 ÷ 1.15 ＝ <strong>240 人</strong> となります。'
+                },
+                {
+                    id: 'a-calc-3',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'おこづかいの 40% で本を買い、残りの 25% でノートを買ったところ、手元に 540 円残りました。はじめのおこづかいはいくらでしたか。',
+                    answer: 1200,
+                    unit: '円',
+                    hint: 'はじめの基準量を 1 とすると、本を買った残りは 0.6。さらにその 25% を使ったので、手元に残ったのは 0.6 × (1 － 0.25) ＝ 0.45 にあたります。',
+                    explanation: 'はじめを 1 とすると、本を買った残りは 1 － 0.4 ＝ 0.6。<br>さらにその 25% を使ったので、手元に残った割合は 0.6 × (1 － 0.25) ＝ 0.45 です。<br>基準量 ＝ 540 ÷ 0.45 ＝ <strong>1200 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-4',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '仕入れ値 800 円の品物に、25% の利益を見込んで定価をつけました。定価はいくらですか。',
+                    answer: 1000,
+                    unit: '円',
+                    hint: '基準量（1）に 25%（0.25）を足すので、定価の割合は 1.25 です。',
+                    explanation: '基準量は 800 円、定価の割合は 1 ＋ 0.25 ＝ 1.25 です。<br>比較量 ＝ 800 × 1.25 ＝ <strong>1000 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-5',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: 'ある商品を定価の 20% 引きで買ったところ、代金は 1600 円でした。この商品の定価（基準量）はいくらですか。',
+                    answer: 2000,
+                    unit: '円',
+                    hint: '定価（基準量）を求めます。20%引きの割合は 0.8 なので、比較量（1600） ÷ 割合（0.8）を計算します。',
+                    explanation: '比較量は 1600 円、割合は 1 － 0.2 ＝ 0.8 です。<br>基準量（定価）＝ 1600 ÷ 0.8 ＝ <strong>2000 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-6',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '4000 円のバッグが 15% 引きで売られ、さらにレジでその値段の 10% 引きになりました。代金は何円ですか。',
+                    answer: 3060,
+                    unit: '円',
+                    hint: 'まず 4000 × 0.85 を計算し、その結果を新たな基準量としてさらに 0.9 をかけます。',
+                    explanation: '15% 引きで 4000 × 0.85 ＝ 3400 円。<br>さらに 10% 引きなので 3400 × 0.9 ＝ <strong>3060 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-7',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '消費税 10% 込みで 2640 円のセーターがあります。税抜き価格（基準量）はいくらですか。',
+                    answer: 2400,
+                    unit: '円',
+                    hint: '税込みの割合は 1.1 です。比較量（2640） ÷ 割合（1.1）を計算しよう。',
+                    explanation: '基準量（税抜き価格）＝ 2640 ÷ 1.1 ＝ <strong>2400 円</strong> となります。'
+                },
+                {
+                    id: 'a-calc-8',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '全体の 30% を 1 日目に読み、残りの 50% を 2 日目に読んだところ、まだ 70 ページ残っています。本全体（基準量）は何ページですか。',
+                    answer: 200,
+                    unit: 'ページ',
+                    hint: '1日目の残りは 0.7。2日目にその半分を読んだので、残りは 0.7 × 0.5 ＝ 0.35 です。',
+                    explanation: '1日目の残りは 1 － 0.3 ＝ 0.7。2日目の残りは 0.7 × (1 － 0.5) ＝ 0.35。<br>基準量（全体）＝ 70 ÷ 0.35 ＝ <strong>200 ページ</strong> となります。'
+                },
+                {
+                    id: 'a-calc-9',
+                    type: 'calc',
+                    instruction: '答えを数字で入力してください。',
+                    text: '仕入れ値 1200 円の商品に 25% の利益を見込んで定価をつけましたが、売れないので定価の 20% 引きで売りました。売値は何円ですか。',
+                    answer: 1200,
+                    unit: '円',
+                    hint: 'まず定価 ＝ 1200 × 1.25 を求め、そのあと 0.8 をかけます。',
+                    explanation: '定価 ＝ 1200 × 1.25 ＝ 1500 円。<br>定価の 20% 引きなので、1500 × 0.8 ＝ <strong>1200 円</strong>（仕入れ値と同じ！）となります。'
+                },
+                {
+                    id: 'a-calc-10',
+                    type: 'calc',
+                    instruction: '百分率（%）で答えてください（小数可）。',
+                    text: '濃さ 10% の食塩水 300 g に、水 100 g を加えました。できた食塩水の濃さは何 % ですか。',
+                    answer: 7.5,
+                    unit: '%',
+                    hint: '比較量（食塩）は 300 × 0.1 ＝ 30 g。基準量（全体の重さ）は 300 ＋ 100 ＝ 400 g になります。',
+                    explanation: '食塩の重さ（比較量）は 300 × 0.1 ＝ 30 g。水を加えた全体の重さ（基準量）は 400 g です。<br>割合 ＝ 30 ÷ 400 ＝ 0.075 ＝ <strong>7.5 %</strong> となります。'
+                }
+            ],
+
+            // --- 超級レジェンド：全15問の計算問題プール（毎回重複なしでランダム5問出題） ---
+            legend: [
+                {
+                    id: 'l-1',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '仕入れ値 2000 円の商品に、30% の利益を見込んで定価をつけました。その後、定価の 10% 引きで売りました。このときの「利益（売値 － 仕入れ値）」は何円ですか。',
+                    answer: 340,
+                    unit: '円',
+                    hint: 'まず定価（2000 × 1.3）を求め、次に 10% 引きの売値（定価 × 0.9）を計算して、仕入れ値 2000 円を引きます。',
+                    explanation: '定価 ＝ 2000 × 1.3 ＝ 2600 円。売値 ＝ 2600 × 0.9 ＝ 2340 円。<br>利益 ＝ 2340 － 2000 ＝ <strong>340 円</strong> となります。'
+                },
+                {
+                    id: 'l-2',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: 'ある商品を定価の 20% 引きにし、さらにレジでその値段の 10% 引きにしたところ、代金は 1440 円でした。基準量（もとの定価）は何円ですか。',
+                    answer: 2000,
+                    unit: '円',
+                    hint: '定価（基準量）を 1 とすると、20% 引きで 0.8、さらに 10% 引きで 0.8 × 0.9 ＝ 0.72 になります。',
+                    explanation: '代金（比較量）は定価（基準量）の 0.8 × 0.9 ＝ 0.72 にあたります。<br>基準量（定価）＝ 1440 ÷ 0.72 ＝ <strong>2000 円</strong> となります。'
+                },
+                {
+                    id: 'l-3',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】百分率（%）で答えてください（小数可）。',
+                    text: '濃さ 6% の食塩水 200 g と、濃さ 12% の食塩水 300 g を混ぜました。できた食塩水の濃さは何 % ですか。',
+                    answer: 9.6,
+                    unit: '%',
+                    hint: 'それぞれの食塩の重さ（200 × 0.06 と 300 × 0.12）を足した比較量を、全体の重さ（500 g）の基準量で割りましょう。',
+                    explanation: '比較量（食塩の合計）＝ 200 × 0.06 ＋ 300 × 0.12 ＝ 12 ＋ 36 ＝ 48 g。基準量（全体の重さ）は 200 ＋ 300 ＝ 500 g です。<br>割合 ＝ 48 ÷ 500 ＝ 0.096 ＝ <strong>9.6 %</strong> となります。'
+                },
+                {
+                    id: 'l-4',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '全体の 20% を 1 日目に読み、さらに残りの 25% を 2 日目に読んだところ、まだ 180 ページ残っています。この本は全部で何ページですか。',
+                    answer: 300,
+                    unit: 'ページ',
+                    hint: '1日目の残りは 0.8。さらにその 25% を読んだので、残ったのは 0.8 × (1 － 0.25) ＝ 0.6 です。',
+                    explanation: '最後に残った割合は (1 － 0.2) × (1 － 0.25) ＝ 0.8 × 0.75 ＝ 0.6 です。<br>基準量（本全体）＝ 180 ÷ 0.6 ＝ <strong>300 ページ</strong> となります。'
+                },
+                {
+                    id: 'l-5',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: 'あるお店の 1 月の売上は 200 万円でした。2 月は 1 月より 20% 増え、3 月は 2 月より 15% 減りました。3 月の売上は何万円ですか。',
+                    answer: 204,
+                    unit: '万円',
+                    hint: '2 月の売上（200 × 1.2）を求めてから、15% 減（× 0.85）を計算します。',
+                    explanation: '2 月の売上 ＝ 200 × 1.2 ＝ 240 万円。<br>3 月の売上 ＝ 240 × (1 － 0.15) ＝ 240 × 0.85 ＝ <strong>204 万円</strong> となります。'
+                },
+                {
+                    id: 'l-6',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】百分率（%）で答えてください。',
+                    text: '濃さ 15% の食塩水 200 g に、水を 100 g 加えてよく混ぜました。できた食塩水の濃さは何 % ですか。',
+                    answer: 10,
+                    unit: '%',
+                    hint: '比較量（食塩の重さ）は 200 × 0.15 ＝ 30 g のまま変わりません。基準量（全体の重さ）は 200 ＋ 100 ＝ 300 g になります。',
+                    explanation: '比較量（食塩の重さ）＝ 200 × 0.15 ＝ 30 g。水を加えた後の基準量（全体の重さ）は 300 g です。<br>割合 ＝ 30 ÷ 300 ＝ 0.1 ＝ <strong>10 %</strong> となります。'
+                },
+                {
+                    id: 'l-7',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: 'ある中学校の昨年の生徒数は、男子が 150 人、女子が 120 人でした。今年は昨年より男子が 10% 増え、女子が 5% 減りました。今年の全校生徒は何人ですか。',
+                    answer: 279,
+                    unit: '人',
+                    hint: '男子（150 × 1.1）と女子（120 × 0.95）を別々に計算して合計しましょう。',
+                    explanation: '今年の男子 ＝ 150 × 1.1 ＝ 165 人、今年の女子 ＝ 120 × 0.95 ＝ 114 人。<br>合計 ＝ 165 ＋ 114 ＝ <strong>279 人</strong> となります。'
+                },
+                {
+                    id: 'l-8',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '定価 5000 円のゲームソフトが 20% 引きで売られており、さらに支払った金額の 10% 分のポイントがもらえます。ポイント分を引くと実質いくらで買えたことになりますか。',
+                    answer: 3600,
+                    unit: '円',
+                    hint: 'まず 20% 引きの支払金額（5000 × 0.8）を求め、その 10% 分のポイントを引きます。',
+                    explanation: '支払金額 ＝ 5000 × 0.8 ＝ 4000 円。もらえるポイント ＝ 4000 × 0.1 ＝ 400 円分。<br>実質負担額 ＝ 4000 － 400 ＝ <strong>3600 円</strong> となります。'
+                },
+                {
+                    id: 'l-9',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '1 週間で 50000 歩を目標にウォーキングをしています。最初の 3 日間で目標の 40% を歩き、次の 2 日間で目標の 35% を歩きました。目標達成まであと何歩ですか。',
+                    answer: 12500,
+                    unit: '歩',
+                    hint: 'すでに基準量（50000歩）の 40% ＋ 35% ＝ 75% を歩いたので、残りの割合は 25%（0.25）です。',
+                    explanation: '残りの割合 ＝ 1 － (0.4 ＋ 0.35) ＝ 0.25。<br>比較量（残りの歩数）＝ 50000 × 0.25 ＝ <strong>12500 歩</strong> となります。'
+                },
+                {
+                    id: 'l-10',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '定価 3200 円のシャツを買うとき、「25% 引きクーポン」を使う場合と、「600 円引きクーポン」を使う場合では、支払う金額の差は何円ですか。',
+                    answer: 200,
+                    unit: '円',
+                    hint: '25% 引きの金額（3200 × 0.75）と、600 円引きの金額（3200 － 600）をそれぞれ求めて比べましょう。',
+                    explanation: '25% 引き ＝ 3200 × 0.75 ＝ 2400 円。600 円引き ＝ 3200 － 600 ＝ 2600 円。<br>金額の差 ＝ 2600 － 2400 ＝ <strong>200 円</strong> となります。'
+                },
+                {
+                    id: 'l-11',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】百分率（%）で答えてください（小数可）。',
+                    text: '濃さ 12% の食塩水 250 g から 50 g を捨て、かわりに水を 50 g 加えてよく混ぜました。できた食塩水の濃さは何 % ですか。',
+                    answer: 9.6,
+                    unit: '%',
+                    hint: '50 g 捨てた後の食塩水 200 g に含まれる比較量（食塩：200 × 0.12）を、水を加えた後の基準量（250 g）で割ります。',
+                    explanation: '残った 200 g 中の食塩（比較量）＝ 200 × 0.12 ＝ 24 g。水を 50 g 加えると基準量は 250 g に戻ります。<br>割合 ＝ 24 ÷ 250 ＝ 0.096 ＝ <strong>9.6 %</strong> となります。'
+                },
+                {
+                    id: 'l-12',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: '1 個 100 円のグラスを 50 個仕入れ、4 割の利益を見込んで定価をつけました。運ぶ途中に 5 個割れてしまいましたが、残りはすべて定価で売れました。全体の利益（売上 － 仕入れ総額）は何円ですか。',
+                    answer: 1300,
+                    unit: '円',
+                    hint: '定価は 100 × 1.4 ＝ 140 円。売れたのは 45 個です。全体の売上から仕入れ総額 5000 円を引きましょう。',
+                    explanation: '定価 ＝ 100 × 1.4 ＝ 140 円。売上総額 ＝ 140 × (50 － 5) ＝ 6300 円。<br>全体の利益 ＝ 6300 － (100 × 50) ＝ <strong>1300 円</strong> となります。'
+                },
+                {
+                    id: 'l-13',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】百分率（%）で答えてください。',
+                    text: 'ある長方形の縦の長さを 20% 増やし、横の長さを 10% 減らして新しい長方形を作りました。新しい長方形の面積は、基準量（もとの長方形の面積）の何 % ですか。',
+                    answer: 108,
+                    unit: '%',
+                    hint: 'もとの縦と横をそれぞれ 1 とすると、新しい縦は 1.2、新しい横は 0.9 になります。',
+                    explanation: '新しい面積の割合 ＝ 1.2 × 0.9 ＝ 1.08。<br>百分率に直すと <strong>108 %</strong> となります。'
+                },
+                {
+                    id: 'l-14',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: 'お小遣いの 30% でマンガを買い、さらに残りの 50% でお菓子を買ったところ、手元に 700 円残りました。基準量（はじめのお小遣い）は何円でしたか。',
+                    answer: 2000,
+                    unit: '円',
+                    hint: 'マンガを買った残りは 0.7。さらにその半分（0.5）を使ったので、残ったのは 0.7 × 0.5 ＝ 0.35 です。',
+                    explanation: '手元に残った割合は (1 － 0.3) × (1 － 0.5) ＝ 0.7 × 0.5 ＝ 0.35 です。<br>基準量（はじめのお小遣い）＝ 700 ÷ 0.35 ＝ <strong>2000 円</strong> となります。'
+                },
+                {
+                    id: 'l-15',
+                    type: 'calc',
+                    instruction: '【超級レジェンド】自分で計算して答えを数字で入力してください。',
+                    text: 'ある学校の入学試験で、受験者全体の 65% が合格し、不合格者は 140 人でした。基準量（受験者全体）は何人ですか。',
+                    answer: 400,
+                    unit: '人',
+                    hint: '合格者が 65% なので、不合格者の割合は 100% － 65% ＝ 35%（0.35）にあたります。',
+                    explanation: '不合格者の割合は 1 － 0.65 ＝ 0.35 です。<br>基準量（受験者全体）＝ 140 ÷ 0.35 ＝ <strong>400 人</strong> となります。'
+                }
+            ]
+        };
+
+        /**
+         * ==========================================
+         * バッジ定義（全20種類・進捗バー付き）
+         * ==========================================
+         */
+        const BADGE_DEFINITIONS = [
+            {
+                id: 'first_step',
+                name: 'はじめの一歩',
+                icon: '🐣',
+                color: 'from-yellow-300 to-amber-400',
+                desc: '初めて1問正解した！',
+                hint: 'どれか1問せいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.totalCorrect, 1), max: 1, unit: '問' })
+            },
+            {
+                id: 'total_10',
+                name: '10問達成',
+                icon: '🎈',
+                color: 'from-pink-300 to-rose-400',
+                desc: '累計10問正解した！',
+                hint: '累計10問せいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.totalCorrect, 10), max: 10, unit: '問' })
+            },
+            {
+                id: 'total_30',
+                name: '30問達成',
+                icon: '🎯',
+                color: 'from-amber-300 to-orange-500',
+                desc: '累計30問正解した！',
+                hint: '累計30問せいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.totalCorrect, 30), max: 30, unit: '問' })
+            },
+            {
+                id: 'total_50',
+                name: '50問達成',
+                icon: '🎓',
+                color: 'from-teal-400 to-emerald-600',
+                desc: '累計50問正解した！',
+                hint: '累計50問せいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.totalCorrect, 50), max: 50, unit: '問' })
+            },
+            {
+                id: 'total_100',
+                name: '100問達成',
+                icon: '👑',
+                color: 'from-yellow-400 via-amber-500 to-orange-600',
+                desc: '累計100問正解の偉業！',
+                hint: '累計100問せいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.totalCorrect, 100), max: 100, unit: '問' })
+            },
+            {
+                id: 'combo_3',
+                name: '3コンボ',
+                icon: '🔥',
+                color: 'from-orange-400 to-rose-500',
+                desc: '3問連続正解した！',
+                hint: '3問つづけてせいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.maxCombo, 3), max: 3, unit: '連続' })
+            },
+            {
+                id: 'combo_5',
+                name: '5コンボ',
+                icon: '⚡',
+                color: 'from-amber-400 to-yellow-500',
+                desc: '5問連続正解した！',
+                hint: '5問つづけてせいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.maxCombo, 5), max: 5, unit: '連続' })
+            },
+            {
+                id: 'combo_10',
+                name: '10コンボ',
+                icon: '🌟',
+                color: 'from-pink-500 via-purple-500 to-indigo-500',
+                desc: '10問連続正解した！',
+                hint: '10問つづけてせいかいしよう',
+                getProgress: (s) => ({ cur: Math.min(s.maxCombo, 10), max: 10, unit: '連続' })
+            },
+            {
+                id: 'identify_5',
+                name: '見分けルーキー',
+                icon: '👀',
+                color: 'from-violet-300 to-indigo-400',
+                desc: '見分け問題を累計5問正解！',
+                hint: '見分け問題を累計5問正解しよう',
+                getProgress: (s) => ({ cur: Math.min(s.identifyCorrect, 5), max: 5, unit: '問' })
+            },
+            {
+                id: 'identify_20',
+                name: '見分けめいじん',
+                icon: '🔍',
+                color: 'from-violet-500 to-purple-700',
+                desc: '見分け問題を累計20問正解！',
+                hint: '見分け問題を累計20問正解しよう',
+                getProgress: (s) => ({ cur: Math.min(s.identifyCorrect, 20), max: 20, unit: '問' })
+            },
+            {
+                id: 'calc_5',
+                name: '計算ルーキー',
+                icon: '✏️',
+                color: 'from-sky-300 to-cyan-500',
+                desc: '計算問題を累計5問正解！',
+                hint: '計算問題を累計5問正解しよう',
+                getProgress: (s) => ({ cur: Math.min(s.calcCorrect, 5), max: 5, unit: '問' })
+            },
+            {
+                id: 'calc_20',
+                name: '計算たつじん',
+                icon: '🧮',
+                color: 'from-sky-500 to-blue-700',
+                desc: '計算問題を累計20問正解！',
+                hint: '計算問題を累計20問正解しよう',
+                getProgress: (s) => ({ cur: Math.min(s.calcCorrect, 20), max: 20, unit: '問' })
+            },
+            {
+                id: 'clear_beginner',
+                name: '初級クリア',
+                icon: '🌱',
+                color: 'from-emerald-400 to-teal-500',
+                desc: '【初級】基礎コースをクリア！',
+                hint: '【初級】基礎コースを1回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.beginner) || 0, 1), max: 1, unit: '回' })
+            },
+            {
+                id: 'clear_intermediate',
+                name: '中級クリア',
+                icon: '🚀',
+                color: 'from-blue-400 to-indigo-500',
+                desc: '【中級】チャレンジコースをクリア！',
+                hint: '【中級】チャレンジコースを1回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.intermediate) || 0, 1), max: 1, unit: '回' })
+            },
+            {
+                id: 'clear_advanced',
+                name: '上級クリア',
+                icon: '🎖️',
+                color: 'from-amber-400 to-yellow-600',
+                desc: '【上級】マスターコースをクリア！',
+                hint: '【上級】マスターコースを1回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.advanced) || 0, 1), max: 1, unit: '回' })
+            },
+            {
+                id: 'repeat_beginner',
+                name: '初級リピーター',
+                icon: '🌿',
+                color: 'from-green-400 to-emerald-600',
+                desc: '【初級】基礎コースを3回クリア！',
+                hint: '【初級】基礎コースを3回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.beginner) || 0, 3), max: 3, unit: '回' })
+            },
+            {
+                id: 'repeat_intermediate',
+                name: '中級常連',
+                icon: '💫',
+                color: 'from-sky-500 to-indigo-600',
+                desc: '【中級】チャレンジコースを3回クリア！',
+                hint: '【中級】チャレンジコースを3回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.intermediate) || 0, 3), max: 3, unit: '回' })
+            },
+            {
+                id: 'repeat_advanced',
+                name: '上級マスター',
+                icon: '🏆',
+                color: 'from-orange-500 to-amber-600',
+                desc: '【上級】マスターコースを3回クリア！',
+                hint: '【上級】マスターコースを3回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.advanced) || 0, 3), max: 3, unit: '回' })
+            },
+            {
+                id: 'repeat_legend',
+                name: '伝説への挑戦者',
+                icon: '⚔️',
+                color: 'from-purple-600 to-fuchsia-600',
+                desc: '【超級】レジェンドコースを3回クリア！',
+                hint: '【超級】レジェンドコースを3回クリアしよう',
+                getProgress: (s) => ({ cur: Math.min((s.clearCounts && s.clearCounts.legend) || 0, 3), max: 3, unit: '回' })
+            },
+            {
+                id: 'legend_god',
+                name: '【超激レア】割合神',
+                icon: '🌌',
+                color: 'from-slate-900 via-fuchsia-600 to-amber-400',
+                desc: 'レジェンドをノーヒント＆全5問正解で3回制覇！',
+                hint: 'レジェンドをノーヒント＆全5問正解で3回制覇',
+                isUltraRare: true,
+                getProgress: (s) => ({ cur: Math.min(s.legendPerfectNoHintCount || 0, 3), max: 3, unit: '回' })
+            }
+        ];
+
+        /**
+         * ==========================================
+         * 効果音マネージャー (Web Audio API)
+         * ==========================================
+         */
+        const SoundFX = {
+            enabled: true,
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playCorrect(combo = 1) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    const boost = Math.min(combo - 1, 8) * 22;
+                    osc.frequency.setValueAtTime(587.33 + boost, now);
+                    osc.frequency.setValueAtTime(880.00 + boost, now + 0.09);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } catch (e) {}
+            },
+            playWrong() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(175, now + 0.12);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } catch (e) {}
+            },
+            playPop() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(680, now + 0.06);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.07);
+                } catch (e) {}
+            },
+            playFanfare() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        const start = now + idx * 0.09;
+                        osc.frequency.setValueAtTime(freq, start);
+                        gain.gain.setValueAtTime(0.16, start);
+                        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(start);
+                        osc.stop(start + 0.35);
+                    });
+                } catch (e) {}
+            }
+        };
+
+        /**
+         * ==========================================
+         * 紙吹雪エフェクト
+         * ==========================================
+         */
+        function launchConfetti(count = 40) {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#ec4899'];
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                const size = Math.random() * 8 + 6;
+                el.style.width = `${size}px`;
+                el.style.height = `${size * 0.65}px`;
+                el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                el.style.left = `${Math.random() * 100}vw`;
+                const duration = Math.random() * 1.4 + 1.4;
+                el.style.animationDuration = `${duration}s`;
+                el.style.animationDelay = `${Math.random() * 0.3}s`;
+                container.appendChild(el);
+                setTimeout(() => el.remove(), (duration + 0.4) * 1000);
+            }
+        }
+
+        /**
+         * ==========================================
+         * バッジ・記録マネージャー (localStorage保存)
+         * ==========================================
+         */
+        const STORAGE_KEY = 'wariai_master_save_v2';
+
+        const BadgeManager = {
+            data: {
+                unlocked: [],
+                stats: {
+                    totalCorrect: 0,
+                    identifyCorrect: 0,
+                    calcCorrect: 0,
+                    maxCombo: 0,
+                    clearedDiffs: [],
+                    clearCounts: { beginner: 0, intermediate: 0, advanced: 0, legend: 0 },
+                    clearedSteps: [], // 例: 'beginner-1', 'beginner-2'
+                    legendPerfectNoHintCount: 0,
+                    legendSeenIds: []
+                }
+            },
+            load() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('wariai_master_save_v1');
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.unlocked && parsed.stats) {
+                            this.data.unlocked = parsed.unlocked;
+                            this.data.stats = {
+                                ...this.data.stats,
+                                ...parsed.stats,
+                                clearCounts: {
+                                    beginner: 0,
+                                    intermediate: 0,
+                                    advanced: 0,
+                                    legend: 0,
+                                    ...(parsed.stats.clearCounts || {})
+                                },
+                                clearedSteps: Array.isArray(parsed.stats.clearedSteps)
+                                    ? parsed.stats.clearedSteps
+                                    : [],
+                                legendSeenIds: Array.isArray(parsed.stats.legendSeenIds)
+                                    ? parsed.stats.legendSeenIds
+                                    : []
+                            };
+                        }
+                    }
+                } catch (e) {}
+            },
+            save() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+                } catch (e) {}
+            },
+            reset() {
+                this.data = {
+                    unlocked: [],
+                    stats: {
+                        totalCorrect: 0,
+                        identifyCorrect: 0,
+                        calcCorrect: 0,
+                        maxCombo: 0,
+                        clearedDiffs: [],
+                        clearCounts: { beginner: 0, intermediate: 0, advanced: 0, legend: 0 },
+                        clearedSteps: [],
+                        legendPerfectNoHintCount: 0,
+                        legendSeenIds: []
+                    }
+                };
+                this.save();
+                this.renderAllUI();
+            },
+            unlock(badgeId, newlyUnlockedList) {
+                if (!this.data.unlocked.includes(badgeId)) {
+                    this.data.unlocked.push(badgeId);
+                    const def = BADGE_DEFINITIONS.find(b => b.id === badgeId);
+                    if (def) newlyUnlockedList.push(def);
+                }
+            },
+            // 1問正解したときのバッジ判定
+            onQuestionCorrect(questionType, currentCombo) {
+                const newly = [];
+                this.data.stats.totalCorrect++;
+                if (questionType === 'identify') this.data.stats.identifyCorrect++;
+                if (questionType === 'calc') this.data.stats.calcCorrect++;
+                if (currentCombo > this.data.stats.maxCombo) {
+                    this.data.stats.maxCombo = currentCombo;
+                }
+
+                if (this.data.stats.totalCorrect >= 1) this.unlock('first_step', newly);
+                if (this.data.stats.totalCorrect >= 10) this.unlock('total_10', newly);
+                if (this.data.stats.totalCorrect >= 30) this.unlock('total_30', newly);
+                if (this.data.stats.totalCorrect >= 50) this.unlock('total_50', newly);
+                if (this.data.stats.totalCorrect >= 100) this.unlock('total_100', newly);
+
+                if (currentCombo >= 3) this.unlock('combo_3', newly);
+                if (currentCombo >= 5) this.unlock('combo_5', newly);
+                if (currentCombo >= 10) this.unlock('combo_10', newly);
+
+                if (this.data.stats.identifyCorrect >= 5) this.unlock('identify_5', newly);
+                if (this.data.stats.identifyCorrect >= 20) this.unlock('identify_20', newly);
+                if (this.data.stats.calcCorrect >= 5) this.unlock('calc_5', newly);
+                if (this.data.stats.calcCorrect >= 20) this.unlock('calc_20', newly);
+
+                this.save();
+                this.renderAllUI();
+                return newly;
+            },
+            // コース完了時のバッジ判定
+            onQuizComplete(difficulty, step, accuracy, isReviewMode, usedHint) {
+                const newly = [];
+                if (!isReviewMode) {
+                    if (!this.data.stats.clearedDiffs.includes(difficulty)) {
+                        this.data.stats.clearedDiffs.push(difficulty);
+                    }
+                    this.data.stats.clearCounts[difficulty] = (this.data.stats.clearCounts[difficulty] || 0) + 1;
+                    const count = this.data.stats.clearCounts[difficulty];
+
+                    // ステップクリア記録（正答率60%以上）
+                    if (difficulty !== 'legend' && accuracy >= 60) {
+                        const stepKey = `${difficulty}-${step}`;
+                        if (!this.data.stats.clearedSteps.includes(stepKey)) {
+                            this.data.stats.clearedSteps.push(stepKey);
+                        }
+                    }
+
+                    // 各難易度の1回クリア＆3回クリアバッジ
+                    if (difficulty === 'beginner') {
+                        this.unlock('clear_beginner', newly);
+                        if (count >= 3) this.unlock('repeat_beginner', newly);
+                    }
+                    if (difficulty === 'intermediate') {
+                        this.unlock('clear_intermediate', newly);
+                        if (count >= 3) this.unlock('repeat_intermediate', newly);
+                    }
+                    if (difficulty === 'advanced') {
+                        this.unlock('clear_advanced', newly);
+                        if (count >= 3) this.unlock('repeat_advanced', newly);
+                    }
+                    if (difficulty === 'legend') {
+                        if (count >= 3) this.unlock('repeat_legend', newly);
+                    }
+
+                    // 超激レア「割合神」：レジェンドをノーヒント＆全5問正解で3回制覇
+                    if (difficulty === 'legend' && accuracy === 100 && !usedHint) {
+                        this.data.stats.legendPerfectNoHintCount = (this.data.stats.legendPerfectNoHintCount || 0) + 1;
+                        if (this.data.stats.legendPerfectNoHintCount >= 3) {
+                            this.unlock('legend_god', newly);
+                        }
+                    }
+                }
+                this.save();
+                this.renderAllUI();
+                return newly;
+            },
+            // UI全般（ヘッダー・ホーム・モーダル）を更新
+            renderAllUI() {
+                const count = this.data.unlocked.length;
+                const total = BADGE_DEFINITIONS.length;
+
+                // ヘッダー・モーダルカウンター
+                document.getElementById('header-badge-count').textContent = `${count}/${total}`;
+                document.getElementById('modal-badge-count').textContent = `${count} / ${total}`;
+
+                // ホーム画面進捗カード
+                const pct = Math.round((count / total) * 100);
+                document.getElementById('home-badge-progress').style.width = `${pct}%`;
+                const statusText = document.getElementById('home-badge-status-text');
+                if (count === 0) {
+                    statusText.textContent = 'まずは最初の1個をゲットしよう！';
+                } else if (count < total) {
+                    statusText.textContent = `いま ${count} 個ゲット！コンプリートまであと ${total - count} 個！`;
+                } else {
+                    statusText.textContent = '🎉 ぜんぶのバッジをコンプリート！君こそ割合神だ！！';
+                }
+
+                // ホーム画面ミニアイコン（全20個）
+                const previewEl = document.getElementById('home-badge-preview');
+                previewEl.innerHTML = '';
+                BADGE_DEFINITIONS.forEach(b => {
+                    const has = this.data.unlocked.includes(b.id);
+                    const prog = b.getProgress(this.data.stats);
+                    const slot = document.createElement('div');
+                    slot.title = has
+                        ? `${b.name}：${b.desc}`
+                        : `未獲得（${b.hint}：${prog.cur}/${prog.max}${prog.unit}）`;
+                    slot.className = has
+                        ? `aspect-square rounded-2xl bg-gradient-to-br ${b.color} flex items-center justify-center text-lg sm:text-xl shadow-sm border-2 border-white`
+                        : (b.isUltraRare
+                            ? 'aspect-square rounded-2xl bg-purple-100 border-2 border-dashed border-purple-400 flex items-center justify-center text-xs font-black text-purple-400'
+                            : 'aspect-square rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center text-xs font-black text-slate-300');
+                    slot.textContent = has ? b.icon : '?';
+                    previewEl.appendChild(slot);
+                });
+
+                // 難易度カードのクリア回数スタンプ
+                document.querySelectorAll('.diff-card').forEach(card => {
+                    const diff = card.dataset.diff;
+                    const stamp = card.querySelector('.diff-clear-stamp');
+                    const clearCount = (this.data.stats.clearCounts && this.data.stats.clearCounts[diff]) || 0;
+                    if (stamp) {
+                        if (clearCount > 0) {
+                            stamp.textContent = `🏅 クリア：${clearCount}回`;
+                            stamp.classList.remove('hidden');
+                        } else {
+                            stamp.classList.add('hidden');
+                        }
+                    }
+                });
+
+                // ステップ1・2のクリア済みタグ更新
+                if (typeof updateStepUI === 'function') {
+                    updateStepUI();
+                }
+
+                // バッジ帳モーダル内の統計とグリッド（進捗バー付き）
+                document.getElementById('stat-total-correct').textContent = this.data.stats.totalCorrect;
+                document.getElementById('stat-max-combo').textContent = this.data.stats.maxCombo;
+                document.getElementById('stat-id-correct').textContent = this.data.stats.identifyCorrect;
+                document.getElementById('stat-calc-correct').textContent = this.data.stats.calcCorrect;
+
+                const gridEl = document.getElementById('badge-grid');
+                gridEl.innerHTML = '';
+                BADGE_DEFINITIONS.forEach(b => {
+                    const has = this.data.unlocked.includes(b.id);
+                    const prog = b.getProgress(this.data.stats);
+                    const progPct = Math.min(100, Math.round((prog.cur / prog.max) * 100));
+
+                    const card = document.createElement('div');
+                    if (b.isUltraRare) {
+                        card.className = has
+                            ? 'rounded-3xl p-4 bg-gradient-to-b from-purple-900 to-slate-900 border-2 border-amber-400 shadow-lg text-center flex flex-col items-center justify-between gap-2 text-white'
+                            : 'rounded-3xl p-4 bg-purple-50 border-2 border-dashed border-purple-300 text-center flex flex-col items-center justify-between gap-2';
+                    } else {
+                        card.className = has
+                            ? 'rounded-3xl p-4 bg-gradient-to-b from-amber-50/80 to-white border-2 border-amber-300 shadow-sm text-center flex flex-col items-center justify-between gap-2'
+                            : 'rounded-3xl p-4 bg-slate-50 border-2 border-dashed border-slate-200 text-center flex flex-col items-center justify-between gap-2';
+                    }
+
+                    const progressBarHTML = !has ? `
+                        <div class="w-full space-y-1 pt-1">
+                            <div class="w-full h-2 ${b.isUltraRare ? 'bg-purple-200' : 'bg-slate-200'} rounded-full overflow-hidden">
+                                <div class="h-full ${b.isUltraRare ? 'bg-purple-600' : 'bg-amber-400'} rounded-full transition-all" style="width: ${progPct}%"></div>
+                            </div>
+                            <div class="text-[10px] font-black ${b.isUltraRare ? 'text-purple-700' : 'text-slate-500'} tabular-nums">
+                                進捗：${prog.cur} / ${prog.max}${prog.unit}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="text-[10px] font-black px-2.5 py-0.5 rounded-full ${b.isUltraRare ? 'bg-amber-400 text-slate-900' : 'bg-emerald-100 text-emerald-700'}">
+                            GET済み ✓
+                        </div>
+                    `;
+
+                    card.innerHTML = `
+                        <div class="flex flex-col items-center gap-1.5 w-full">
+                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm ${has ? `bg-gradient-to-br ${b.color} border-2 border-white` : (b.isUltraRare ? 'bg-purple-200 text-purple-500 font-black text-xl' : 'bg-slate-200 text-slate-400 font-black text-xl')}">
+                                ${has ? b.icon : '?'}
+                            </div>
+                            <div class="font-black text-sm leading-tight ${has ? (b.isUltraRare ? 'text-amber-300' : 'text-slate-800') : (b.isUltraRare ? 'text-purple-700' : 'text-slate-500')}">
+                                ${has ? b.name : (b.isUltraRare ? '【超激レア】？？？' : '？？？')}
+                            </div>
+                            <div class="text-[11px] font-bold leading-snug ${has ? (b.isUltraRare ? 'text-purple-100' : 'text-amber-700') : (b.isUltraRare ? 'text-purple-600' : 'text-slate-400')}">
+                                ${has ? b.desc : b.hint}
+                            </div>
+                        </div>
+                        ${progressBarHTML}
+                    `;
+                    gridEl.appendChild(card);
+                });
+            }
+        };
+
+        // バッジ獲得お祝いモーダルを表示
+        function showBadgeUnlockModal(badges) {
+            if (!badges || badges.length === 0) return;
+            SoundFX.playFanfare();
+            launchConfetti(55);
+
+            const listEl = document.getElementById('unlock-badge-list');
+            listEl.innerHTML = '';
+            badges.forEach(b => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 p-3 rounded-2xl bg-amber-50 border-2 border-amber-200 text-left';
+                item.innerHTML = `
+                    <div class="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br ${b.color} flex items-center justify-center text-3xl shadow-md border-2 border-white animate-shine">
+                        ${b.icon}
+                    </div>
+                    <div>
+                        <div class="font-black text-base text-slate-800">${b.name}</div>
+                        <div class="text-xs font-bold text-orange-600">${b.desc}</div>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+            document.getElementById('badge-unlock-modal').classList.remove('hidden');
+        }
+
+        /**
+         * ==========================================
+         * アプリ状態管理
+         * ==========================================
+         */
+        const state = {
+            difficulty: 'beginner', // 'beginner' | 'intermediate' | 'advanced' | 'legend'
+            step: 1,                // 1 | 2（初級・中級・上級用）
+            mode: 'all',            // 'all' | 'identify' | 'calc'
+            questions: [],
+            currentIndex: 0,
+            results: [],
+            combo: 0,
+            sessionNewBadges: [],
+            isReviewMode: false,
+            usedHintInSession: false,
+            selectedSlots: { base: null, compare: null, rate: null },
+            activeSlot: 'base',
+            isAnswered: false
+        };
+
+        const DIFF_META = {
+            beginner: { label: '【初級】基礎コース', badgeClass: 'bg-emerald-100 text-emerald-700 border border-emerald-200' },
+            intermediate: { label: '【中級】チャレンジコース', badgeClass: 'bg-sky-100 text-sky-700 border border-sky-200' },
+            advanced: { label: '【上級】マスターコース', badgeClass: 'bg-amber-100 text-amber-700 border border-amber-200' },
+            legend: { label: '【超級】レジェンドコース', badgeClass: 'bg-purple-900 text-amber-300 border border-purple-500' }
+        };
+
+        const views = {
+            home: document.getElementById('view-home'),
+            quiz: document.getElementById('view-quiz'),
+            result: document.getElementById('view-result')
+        };
+
+        /**
+         * ==========================================
+         * ユーティリティ関数
+         * ==========================================
+         */
+        function showView(viewName) {
+            Object.keys(views).forEach(k => {
+                views[k].classList.toggle('hidden', k !== viewName);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.remove('hidden');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 2200);
+        }
+
+        function normalizeNumberString(str) {
+            return str
+                .trim()
+                .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+                .replace(/．/g, '.')
+                .replace(/,/g, '');
+        }
+
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        /**
+         * ==========================================
+         * ホーム画面のイベント設定
+         * ==========================================
+         */
+        document.querySelectorAll('.diff-card').forEach(card => {
+            card.addEventListener('click', () => {
+                SoundFX.playPop();
+                state.difficulty = card.dataset.diff;
+                updateDifficultyUI();
+            });
+        });
+
+        function updateDifficultyUI() {
+            const styles = {
+                beginner: ['border-emerald-400', 'bg-emerald-50', 'shadow-md'],
+                intermediate: ['border-sky-400', 'bg-sky-50', 'shadow-md'],
+                advanced: ['border-amber-400', 'bg-amber-50', 'shadow-md'],
+                legend: ['border-amber-400', 'ring-4', 'ring-purple-300/60', 'shadow-lg']
+            };
+            const allActiveClasses = Object.values(styles).flat();
+
+            document.querySelectorAll('.diff-card').forEach(card => {
+                const diff = card.dataset.diff;
+                const badge = card.querySelector('.check-badge');
+                if (diff === 'legend') {
+                    card.classList.remove('border-amber-400', 'ring-4', 'ring-purple-300/60', 'shadow-lg', 'border-purple-300');
+                    if (diff === state.difficulty) {
+                        card.classList.add(...styles.legend);
+                        badge.classList.remove('hidden');
+                    } else {
+                        card.classList.add('border-purple-300');
+                        badge.classList.add('hidden');
+                    }
+                    return;
+                }
+                card.classList.remove(...allActiveClasses, 'border-slate-200', 'bg-white', 'shadow-sm');
+                if (diff === state.difficulty) {
+                    card.classList.add(...styles[diff]);
+                    badge.classList.remove('hidden');
+                } else {
+                    card.classList.add('border-slate-200', 'bg-white', 'shadow-sm');
+                    badge.classList.add('hidden');
+                }
+            });
+
+            // レジェンドコース時はステップ選択を隠し、専用表示に切り替え
+            const isLegend = state.difficulty === 'legend';
+            document.getElementById('step-section').classList.toggle('hidden', isLegend);
+            document.getElementById('mode-selector').classList.toggle('hidden', isLegend);
+            document.getElementById('legend-mode-notice').classList.toggle('hidden', !isLegend);
+            document.getElementById('mode-step-num').textContent = isLegend ? '2' : '3';
+
+            updateStepUI();
+        }
+
+        // ステップ1 / ステップ2 選択UI更新
+        function updateStepUI() {
+            const clearedSteps = (BadgeManager.data.stats && BadgeManager.data.stats.clearedSteps) || [];
+            document.getElementById('step-1-cleared-tag').classList.toggle(
+                'hidden',
+                !clearedSteps.includes(`${state.difficulty}-1`)
+            );
+            document.getElementById('step-2-cleared-tag').classList.toggle(
+                'hidden',
+                !clearedSteps.includes(`${state.difficulty}-2`)
+            );
+
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                const st = Number(btn.dataset.step);
+                if (st === state.step) {
+                    btn.className = 'step-btn btn-pop p-3.5 rounded-2xl border-4 border-emerald-400 bg-emerald-50 text-left shadow-sm transition-all';
+                } else {
+                    btn.className = 'step-btn btn-pop p-3.5 rounded-2xl border-4 border-slate-200 bg-white hover:border-emerald-300 text-left shadow-sm transition-all';
+                }
+            });
+        }
+
+        document.querySelectorAll('.step-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                SoundFX.playPop();
+                state.step = Number(btn.dataset.step);
+                updateStepUI();
+            });
+        });
+
+        // モード選択
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                SoundFX.playPop();
+                state.mode = btn.dataset.mode;
+                document.querySelectorAll('.mode-btn').forEach(b => {
+                    if (b.dataset.mode === state.mode) {
+                        b.className = 'mode-btn py-2.5 px-1.5 rounded-2xl text-xs sm:text-sm font-black bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm transition-all';
+                    } else {
+                        b.className = 'mode-btn py-2.5 px-1.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all';
+                    }
+                });
+            });
+        });
+
+        // スタートボタン
+        document.getElementById('start-quiz-btn').addEventListener('click', () => {
+            SoundFX.playPop();
+            startQuiz();
+        });
+
+        /**
+         * ==========================================
+         * クイズ制御ロジック
+         * ==========================================
+         */
+        function startQuiz(customQuestions = null) {
+            state.isReviewMode = Boolean(customQuestions);
+            if (customQuestions) {
+                state.questions = customQuestions;
+            } else {
+                const pool = QUESTION_BANK[state.difficulty];
+                if (state.difficulty === 'legend') {
+                    // 全15問のプールから未出題を優先して重複なしで5問ランダム選出
+                    let seenIds = BadgeManager.data.stats.legendSeenIds || [];
+                    const unseen = pool.filter(q => !seenIds.includes(q.id));
+                    let chosen = [];
+
+                    if (unseen.length >= 5) {
+                        chosen = shuffleArray(unseen).slice(0, 5);
+                        seenIds = [...seenIds, ...chosen.map(q => q.id)];
+                    } else {
+                        const firstPart = shuffleArray(unseen);
+                        const needed = 5 - firstPart.length;
+                        const restPool = pool.filter(q => !firstPart.some(u => u.id === q.id));
+                        const secondPart = shuffleArray(restPool).slice(0, needed);
+                        chosen = shuffleArray([...firstPart, ...secondPart]);
+                        seenIds = chosen.map(q => q.id);
+                    }
+
+                    BadgeManager.data.stats.legendSeenIds = seenIds;
+                    BadgeManager.save();
+                    state.questions = chosen;
+                } else {
+                    // 初級・中級・上級：ステップ1（見分け0〜4＋計算10〜14）、ステップ2（見分け5〜9＋計算15〜19）
+                    const idAll = pool.filter(q => q.type === 'identify');
+                    const calcAll = pool.filter(q => q.type === 'calc');
+                    const startIdx = state.step === 1 ? 0 : 5;
+                    const stepId = idAll.slice(startIdx, startIdx + 5);
+                    const stepCalc = calcAll.slice(startIdx, startIdx + 5);
+
+                    if (state.mode === 'identify') {
+                        state.questions = stepId;
+                    } else if (state.mode === 'calc') {
+                        state.questions = stepCalc;
+                    } else {
+                        state.questions = [...stepId, ...stepCalc];
+                    }
+                }
+            }
+
+            state.currentIndex = 0;
+            state.results = [];
+            state.combo = 0;
+            state.sessionNewBadges = [];
+            state.usedHintInSession = false;
+            showView('quiz');
+            renderQuestion();
+        }
+
+        function updateComboBadge() {
+            const comboEl = document.getElementById('quiz-combo-badge');
+            if (state.combo >= 2) {
+                comboEl.textContent = `🔥 ${state.combo}コンボ！`;
+                comboEl.classList.remove('hidden');
+            } else {
+                comboEl.classList.add('hidden');
+            }
+        }
+
+        function renderQuestion() {
+            const q = state.questions[state.currentIndex];
+            state.isAnswered = false;
+            state.selectedSlots = { base: null, compare: null, rate: null };
+            state.activeSlot = 'base';
+            updateComboBadge();
+
+            // ヘッダー・プログレス更新
+            const meta = DIFF_META[state.difficulty];
+            const diffBadge = document.getElementById('quiz-diff-badge');
+            diffBadge.textContent = state.difficulty === 'legend'
+                ? `${meta.label}（厳選5問）`
+                : `${meta.label}｜ステップ${state.step}`;
+            diffBadge.className = `px-3 py-1 rounded-full text-xs font-black ${meta.badgeClass}`;
+
+            const total = state.questions.length;
+            const current = state.currentIndex + 1;
+            document.getElementById('quiz-progress-text').textContent = `${current} / ${total}`;
+            document.getElementById('quiz-progress-bar').style.width = `${(current / total) * 100}%`;
+
+            // 問題文・ヒントリセット
+            const typeBadge = document.getElementById('question-type-badge');
+            if (q.type === 'identify') {
+                typeBadge.textContent = '🔍 見分け問題';
+                typeBadge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-violet-100 text-violet-700';
+            } else {
+                typeBadge.textContent = '🧮 計算問題';
+                typeBadge.className = 'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-sky-100 text-sky-700';
+            }
+
+            document.getElementById('question-instruction').textContent = q.instruction;
+            document.getElementById('question-text').textContent = q.text;
+            document.getElementById('hint-text').textContent = q.hint;
+            document.getElementById('hint-box').classList.add('hidden');
+
+            // フィードバック非表示・送信ボタン表示
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('submit-area').classList.remove('hidden');
+
+            // タイプ別エリア切り替え
+            const areaIdentify = document.getElementById('area-identify');
+            const areaCalc = document.getElementById('area-calc');
+
+            if (q.type === 'identify') {
+                areaIdentify.classList.remove('hidden');
+                areaCalc.classList.add('hidden');
+                renderIdentifyUI(q);
+            } else {
+                areaIdentify.classList.add('hidden');
+                areaCalc.classList.remove('hidden');
+                const input = document.getElementById('calc-input');
+                input.value = '';
+                input.disabled = false;
+                document.getElementById('calc-unit').textContent = q.unit;
+                setNumpadDisabled(false);
+            }
+
+            updateSubmitButtonState();
+        }
+
+        /**
+         * 見分け問題のUI描画とインタラクション
+         */
+        function renderIdentifyUI(q) {
+            const choicesContainer = document.getElementById('identify-choices');
+            choicesContainer.innerHTML = '';
+
+            const shuffled = shuffleArray(q.choices);
+            shuffled.forEach(choiceText => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.choice = choiceText;
+                btn.textContent = choiceText;
+                btn.className = 'choice-chip btn-pop px-4 py-2.5 rounded-2xl bg-white border-2 border-indigo-200 border-b-4 font-black text-sm sm:text-base text-slate-800 shadow-sm hover:border-indigo-400 hover:bg-indigo-50 transition-all';
+                btn.addEventListener('click', () => handleChoiceClick(choiceText));
+                choicesContainer.appendChild(btn);
+            });
+
+            updateSlotsUI();
+        }
+
+        function handleChoiceClick(choiceText) {
+            if (state.isAnswered) return;
+            SoundFX.playPop();
+
+            Object.keys(state.selectedSlots).forEach(key => {
+                if (state.selectedSlots[key] === choiceText) {
+                    state.selectedSlots[key] = null;
+                }
+            });
+
+            state.selectedSlots[state.activeSlot] = choiceText;
+
+            const order = ['base', 'compare', 'rate'];
+            const nextEmpty = order.find(k => state.selectedSlots[k] === null);
+            if (nextEmpty) {
+                state.activeSlot = nextEmpty;
+            }
+
+            updateSlotsUI();
+            updateSubmitButtonState();
+        }
+
+        document.querySelectorAll('.slot-box').forEach(box => {
+            box.addEventListener('click', (e) => {
+                if (state.isAnswered) return;
+                const slotKey = box.dataset.slot;
+                if (e.target.classList.contains('slot-clear') || (state.activeSlot === slotKey && state.selectedSlots[slotKey] !== null)) {
+                    state.selectedSlots[slotKey] = null;
+                    state.activeSlot = slotKey;
+                    SoundFX.playPop();
+                } else {
+                    state.activeSlot = slotKey;
+                }
+                updateSlotsUI();
+                updateSubmitButtonState();
+            });
+        });
+
+        function updateSlotsUI() {
+            const usedValues = Object.values(state.selectedSlots).filter(v => v !== null);
+
+            document.querySelectorAll('.slot-box').forEach(box => {
+                const key = box.dataset.slot;
+                const val = state.selectedSlots[key];
+                const valEl = box.querySelector('.slot-value');
+                const clearEl = box.querySelector('.slot-clear');
+
+                box.classList.remove(
+                    'border-indigo-500', 'bg-indigo-50/70', 'ring-2', 'ring-indigo-200',
+                    'border-solid', 'border-dashed', 'border-slate-300', 'bg-slate-50', 'bg-white',
+                    'border-emerald-500', 'bg-emerald-50', 'border-rose-400', 'bg-rose-50'
+                );
+
+                if (val !== null) {
+                    valEl.textContent = val;
+                    valEl.className = 'slot-value min-h-[32px] flex items-center justify-center font-extrabold text-base sm:text-lg text-indigo-700';
+                    clearEl.classList.toggle('hidden', state.isAnswered);
+                    box.classList.add('border-solid', 'bg-white');
+                } else {
+                    valEl.textContent = state.activeSlot === key ? 'ここに選択...' : '未選択';
+                    valEl.className = 'slot-value min-h-[32px] flex items-center justify-center font-medium text-sm text-slate-400';
+                    clearEl.classList.add('hidden');
+                    box.classList.add('border-dashed', 'bg-slate-50');
+                }
+
+                if (!state.isAnswered && state.activeSlot === key) {
+                    box.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                } else if (!state.isAnswered) {
+                    box.classList.add('border-slate-300');
+                }
+            });
+
+            document.querySelectorAll('.choice-chip').forEach(chip => {
+                const isUsed = usedValues.includes(chip.dataset.choice);
+                if (isUsed) {
+                    chip.classList.add('opacity-40', 'bg-slate-100', 'border-slate-200');
+                    chip.classList.remove('bg-white', 'shadow-sm');
+                } else {
+                    chip.classList.remove('opacity-40', 'bg-slate-100');
+                    chip.classList.add('bg-white', 'shadow-sm');
+                }
+                chip.disabled = state.isAnswered;
+            });
+        }
+
+        // 計算問題入力＆ナンバーパッド操作
+        const calcInput = document.getElementById('calc-input');
+        calcInput.addEventListener('input', updateSubmitButtonState);
+        calcInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !state.isAnswered && !document.getElementById('submit-answer-btn').disabled) {
+                checkAnswer();
+            }
+        });
+
+        function setNumpadDisabled(disabled) {
+            document.querySelectorAll('.numpad-btn').forEach(btn => {
+                btn.disabled = disabled;
+                btn.classList.toggle('opacity-50', disabled);
+            });
+        }
+
+        document.querySelectorAll('.numpad-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (state.isAnswered) return;
+                SoundFX.playPop();
+                const num = btn.dataset.num;
+                const action = btn.dataset.action;
+
+                if (num !== undefined) {
+                    if (num === '.' && calcInput.value.includes('.')) return;
+                    if (num === '.' && calcInput.value === '') {
+                        calcInput.value = '0.';
+                    } else {
+                        calcInput.value += num;
+                    }
+                } else if (action === 'backspace') {
+                    calcInput.value = calcInput.value.slice(0, -1);
+                } else if (action === 'clear') {
+                    calcInput.value = '';
+                }
+                updateSubmitButtonState();
+            });
+        });
+
+        function updateSubmitButtonState() {
+            const q = state.questions[state.currentIndex];
+            const btn = document.getElementById('submit-answer-btn');
+            if (q.type === 'identify') {
+                const allFilled = state.selectedSlots.base && state.selectedSlots.compare && state.selectedSlots.rate;
+                btn.disabled = !allFilled;
+            } else {
+                btn.disabled = calcInput.value.trim() === '';
+            }
+        }
+
+        /**
+         * 答え合わせ処理
+         */
+        document.getElementById('submit-answer-btn').addEventListener('click', checkAnswer);
+
+        function checkAnswer() {
+            if (state.isAnswered) return;
+            const q = state.questions[state.currentIndex];
+            let isCorrect = false;
+            let userAnswerText = '';
+            let correctAnswerText = '';
+
+            if (q.type === 'identify') {
+                isCorrect =
+                    state.selectedSlots.base === q.answer.base &&
+                    state.selectedSlots.compare === q.answer.compare &&
+                    state.selectedSlots.rate === q.answer.rate;
+
+                userAnswerText = `基準量(き):${state.selectedSlots.base} ／ 比較量(ひ):${state.selectedSlots.compare} ／ 割合(わり):${state.selectedSlots.rate}`;
+                correctAnswerText = `基準量(き)：${q.answer.base} ／ 比較量(ひ)：${q.answer.compare} ／ 割合(わり)：${q.answer.rate}`;
+
+                state.isAnswered = true;
+                updateSlotsUI();
+                document.querySelectorAll('.slot-box').forEach(box => {
+                    const key = box.dataset.slot;
+                    const slotOk = state.selectedSlots[key] === q.answer[key];
+                    box.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200', 'border-slate-300');
+                    box.classList.add(slotOk ? 'border-emerald-500' : 'border-rose-400', slotOk ? 'bg-emerald-50' : 'bg-rose-50');
+                });
+            } else {
+                const rawVal = normalizeNumberString(calcInput.value);
+                const numVal = parseFloat(rawVal);
+                if (isNaN(numVal)) {
+                    showToast('有効な数字を入力してください');
+                    calcInput.focus();
+                    return;
+                }
+                isCorrect = Math.abs(numVal - q.answer) < 1e-6;
+                userAnswerText = `${rawVal} ${q.unit}`.trim();
+                correctAnswerText = `${q.answer} ${q.unit}`.trim();
+                state.isAnswered = true;
+                calcInput.disabled = true;
+                setNumpadDisabled(true);
+            }
+
+            state.results.push({
+                question: q,
+                isCorrect,
+                userAnswerText,
+                correctAnswerText
+            });
+
+            const feedbackArea = document.getElementById('feedback-area');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackCorrect = document.getElementById('feedback-correct-answer');
+            const feedbackExpl = document.getElementById('feedback-explanation');
+
+            document.getElementById('submit-area').classList.add('hidden');
+            feedbackArea.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-300', 'bg-rose-50', 'border-rose-300', 'animate-shake');
+
+            if (isCorrect) {
+                state.combo++;
+                updateComboBadge();
+                SoundFX.playCorrect(state.combo);
+                launchConfetti(22);
+
+                feedbackArea.classList.add('bg-emerald-50', 'border-emerald-300');
+                feedbackIcon.textContent = '🎉';
+                feedbackIcon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white font-black text-2xl bg-emerald-400 shadow-sm';
+                feedbackTitle.textContent = state.combo >= 3 ? `大正解！${state.combo}連続コンボ！🔥` : '大正解！やったね！';
+                feedbackTitle.className = 'font-black text-lg sm:text-xl text-emerald-700';
+                feedbackCorrect.textContent = `こたえ：${correctAnswerText}`;
+                feedbackCorrect.className = 'text-sm font-extrabold text-emerald-600';
+
+                const newly = BadgeManager.onQuestionCorrect(q.type, state.combo);
+                if (newly.length > 0) {
+                    state.sessionNewBadges.push(...newly);
+                    setTimeout(() => showBadgeUnlockModal(newly), 350);
+                }
+            } else {
+                state.combo = 0;
+                updateComboBadge();
+                SoundFX.playWrong();
+                feedbackArea.classList.add('bg-rose-50', 'border-rose-300', 'animate-shake');
+                feedbackIcon.textContent = '💦';
+                feedbackIcon.className = 'w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white font-black text-2xl bg-rose-400 shadow-sm';
+                feedbackTitle.textContent = 'おしい！つぎはきっとできるよ！';
+                feedbackTitle.className = 'font-black text-lg sm:text-xl text-rose-700';
+                feedbackCorrect.textContent = `正しいこたえ：${correctAnswerText}`;
+                feedbackCorrect.className = 'text-sm font-extrabold text-rose-600';
+            }
+
+            feedbackExpl.innerHTML = q.explanation;
+
+            const isLast = state.currentIndex === state.questions.length - 1;
+            document.getElementById('next-btn-label').textContent = isLast ? 'けっかを見る 🎊' : 'つぎの問題へ';
+        }
+
+        document.getElementById('next-question-btn').addEventListener('click', () => {
+            SoundFX.playPop();
+            if (state.currentIndex < state.questions.length - 1) {
+                state.currentIndex++;
+                renderQuestion();
+            } else {
+                renderResult();
+            }
+        });
+
+        document.getElementById('hint-toggle-btn').addEventListener('click', () => {
+            SoundFX.playPop();
+            const hintBox = document.getElementById('hint-box');
+            const willShow = hintBox.classList.contains('hidden');
+            hintBox.classList.toggle('hidden');
+            if (willShow) {
+                state.usedHintInSession = true;
+            }
+        });
+
+        /**
+         * ==========================================
+         * リザルト画面描画
+         * ==========================================
+         */
+        function renderResult() {
+            showView('result');
+            const total = state.results.length;
+            const correctCount = state.results.filter(r => r.isCorrect).length;
+            const accuracy = Math.round((correctCount / total) * 100);
+
+            document.getElementById('result-correct-count').textContent = correctCount;
+            document.getElementById('result-total-count').textContent = total;
+            document.getElementById('result-accuracy').textContent = `${accuracy}%`;
+
+            // コース完了によるバッジ判定
+            const endNewly = BadgeManager.onQuizComplete(
+                state.difficulty,
+                state.step,
+                accuracy,
+                state.isReviewMode,
+                state.usedHintInSession
+            );
+            if (endNewly.length > 0) {
+                state.sessionNewBadges.push(...endNewly);
+                setTimeout(() => showBadgeUnlockModal(endNewly), 300);
+            } else if (accuracy === 100) {
+                SoundFX.playFanfare();
+                launchConfetti(60);
+            }
+
+            // 「➡️ ステップ2へすすむ」ボタン表示判定（初級・中級・上級のステップ1で正答率60%以上）
+            const nextStepBtn = document.getElementById('next-step-btn');
+            if (!state.isReviewMode && state.difficulty !== 'legend' && state.step === 1 && accuracy >= 60) {
+                nextStepBtn.classList.remove('hidden');
+                nextStepBtn.onclick = () => {
+                    SoundFX.playPop();
+                    state.step = 2;
+                    updateStepUI();
+                    startQuiz();
+                };
+            } else {
+                nextStepBtn.classList.add('hidden');
+            }
+
+            // 今回のセッションで獲得したバッジ表示
+            const newBadgesBox = document.getElementById('result-new-badges-box');
+            const newBadgesList = document.getElementById('result-new-badges-list');
+            if (state.sessionNewBadges.length > 0) {
+                newBadgesBox.classList.remove('hidden');
+                newBadgesList.innerHTML = '';
+                state.sessionNewBadges.forEach(b => {
+                    const chip = document.createElement('span');
+                    chip.className = `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${b.color} text-white font-black text-xs shadow-sm`;
+                    chip.textContent = `${b.icon} ${b.name}`;
+                    newBadgesList.appendChild(chip);
+                });
+            } else {
+                newBadgesBox.classList.add('hidden');
+            }
+
+            // ランク判定
+            const rankEl = document.getElementById('result-rank');
+            const titleEl = document.getElementById('result-title');
+            const subEl = document.getElementById('result-subtitle');
+
+            if (accuracy === 100) {
+                rankEl.textContent = '👑';
+                rankEl.className = 'inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-5xl shadow-lg border-b-4 border-orange-700/40 animate-bounce-slow';
+                titleEl.textContent = 'パーフェクト！大天才！！';
+                subEl.textContent = '「ひ・き・わり」をかんぺきにマスターしたね！';
+            } else if (accuracy >= 80) {
+                rankEl.textContent = '🌟';
+                rankEl.className = 'inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white font-black text-5xl shadow-lg border-b-4 border-teal-700/40';
+                titleEl.textContent = 'すごい！あとすこしで満点！';
+                subEl.textContent = 'まちがえた問題だけリベンジしてパーフェクトをねらおう！';
+            } else if (accuracy >= 60) {
+                rankEl.textContent = '👍';
+                rankEl.className = 'inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-sky-400 to-indigo-500 text-white font-black text-5xl shadow-lg border-b-4 border-indigo-700/40';
+                titleEl.textContent = 'クリアおめでとう！';
+                subEl.textContent = '次のステップや復習にもチャレンジしてみよう！';
+            } else {
+                rankEl.textContent = '🌱';
+                rankEl.className = 'inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-pink-400 to-rose-500 text-white font-black text-5xl shadow-lg border-b-4 border-rose-700/40';
+                titleEl.textContent = 'まずは見分け方からコツコツと！';
+                subEl.textContent = '「📖 公式ガイド」のひきわり納豆を見ながらチャレンジしよう！';
+            }
+
+            // 間違えた問題だけ復習ボタン
+            const wrongQuestions = state.results.filter(r => !r.isCorrect).map(r => r.question);
+            const retryWrongBtn = document.getElementById('retry-wrong-btn');
+            if (wrongQuestions.length > 0) {
+                retryWrongBtn.classList.remove('hidden');
+                retryWrongBtn.textContent = `間違えた ${wrongQuestions.length} 問だけ復習する`;
+                retryWrongBtn.onclick = () => startQuiz(wrongQuestions);
+            } else {
+                retryWrongBtn.classList.add('hidden');
+            }
+
+            // 振り返りリスト描画
+            const listEl = document.getElementById('result-review-list');
+            listEl.innerHTML = '';
+            state.results.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-4 sm:p-5 border ${item.isCorrect ? 'border-slate-200' : 'border-rose-200 bg-rose-50/30'} space-y-2`;
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-black text-white ${item.isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}">
+                                ${item.isCorrect ? '○' : '✕'}
+                            </span>
+                            <span class="text-xs font-bold text-slate-500">第 ${idx + 1} 問（${item.question.type === 'identify' ? '見分け' : '計算'}）</span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-bold text-slate-800 leading-relaxed">${item.question.text}</p>
+                    <div class="text-xs space-y-1 pt-1">
+                        <div class="${item.isCorrect ? 'text-emerald-700' : 'text-rose-700'} font-semibold">あなたの答え：${item.userAnswerText}</div>
+                        ${!item.isCorrect ? `<div class="text-slate-700 font-bold">正しい答え：${item.correctAnswerText}</div>` : ''}
+                    </div>
+                    <div class="text-xs text-slate-600 bg-slate-50 rounded-xl p-3 border border-slate-100 leading-relaxed">
+                        ${item.question.explanation}
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        /**
+         * ==========================================
+         * ナビゲーション・モーダル・音声トグル
+         * ==========================================
+         */
+        document.getElementById('header-home-btn').addEventListener('click', () => showView('home'));
+        document.getElementById('quiz-back-btn').addEventListener('click', () => showView('home'));
+        document.getElementById('result-home-btn').addEventListener('click', () => showView('home'));
+        document.getElementById('retry-all-btn').addEventListener('click', () => startQuiz());
+
+        // 公式ガイドモーダル
+        const guideModal = document.getElementById('guide-modal');
+        const toggleGuide = (show) => {
+            if (show) SoundFX.playPop();
+            guideModal.classList.toggle('hidden', !show);
+        };
+        document.getElementById('open-guide-btn').addEventListener('click', () => toggleGuide(true));
+        document.getElementById('close-guide-btn').addEventListener('click', () => toggleGuide(false));
+        document.getElementById('close-guide-btn-bottom').addEventListener('click', () => toggleGuide(false));
+        guideModal.addEventListener('click', (e) => {
+            if (e.target === guideModal) toggleGuide(false);
+        });
+
+        // 効果音トグル
+        document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+            SoundFX.enabled = !SoundFX.enabled;
+            document.getElementById('icon-sound-on').classList.toggle('hidden', !SoundFX.enabled);
+            document.getElementById('icon-sound-off').classList.toggle('hidden', SoundFX.enabled);
+            showToast(SoundFX.enabled ? '効果音をONにしたよ！🔊' : '効果音をOFFにしたよ 🔇');
+        });
+
+        // バッジ帳モーダル制御
+        const badgesModal = document.getElementById('badges-modal');
+        const toggleBadgesModal = (show) => {
+            if (show) SoundFX.playPop();
+            badgesModal.classList.toggle('hidden', !show);
+        };
+        document.getElementById('open-badges-btn').addEventListener('click', () => toggleBadgesModal(true));
+        document.getElementById('home-badge-card').addEventListener('click', () => toggleBadgesModal(true));
+        document.getElementById('close-badges-btn').addEventListener('click', () => toggleBadgesModal(false));
+        document.getElementById('close-badges-btn-bottom').addEventListener('click', () => toggleBadgesModal(false));
+        badgesModal.addEventListener('click', (e) => {
+            if (e.target === badgesModal) toggleBadgesModal(false);
+        });
+
+        // 記録リセット（2回押し確認でalert/confirm不使用）
+        let resetConfirmPending = false;
+        const resetBtn = document.getElementById('reset-badges-btn');
+        resetBtn.addEventListener('click', () => {
+            if (!resetConfirmPending) {
+                resetConfirmPending = true;
+                resetBtn.textContent = '本当にリセットする？（もう1回タップ）';
+                resetBtn.classList.add('text-rose-600', 'font-black');
+                setTimeout(() => {
+                    resetConfirmPending = false;
+                    resetBtn.textContent = 'きろくをリセット';
+                    resetBtn.classList.remove('text-rose-600', 'font-black');
+                }, 4000);
+            } else {
+                resetConfirmPending = false;
+                resetBtn.textContent = 'きろくをリセット';
+                resetBtn.classList.remove('text-rose-600', 'font-black');
+                BadgeManager.reset();
+                showToast('バッジのきろくをリセットしました');
+            }
+        });
+
+        // 新バッジ獲得お祝いモーダルを閉じる
+        document.getElementById('close-unlock-modal-btn').addEventListener('click', () => {
+            SoundFX.playPop();
+            document.getElementById('badge-unlock-modal').classList.add('hidden');
+        });
+
+        // 起動時にセーブデータを読み込んでUI反映
+        BadgeManager.load();
+        BadgeManager.renderAllUI();
+        updateDifficultyUI();
+    </script>
+</body>
+</html>
